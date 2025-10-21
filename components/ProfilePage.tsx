@@ -1,15 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Application } from '../types';
+
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 interface ProfilePageProps {
   navigate: (page: 'home') => void;
   applications: Application[];
+  userProfile: UserProfile;
+  onProfileUpdate: (updatedProfile: UserProfile) => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications }) => {
-  const [firstName, setFirstName] = useState('Jane');
-  const [lastName, setLastName] = useState('Doe');
-  const [email, setEmail] = useState('jane.doe@example.com');
+const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userProfile, onProfileUpdate }) => {
+  const [formData, setFormData] = useState<UserProfile>(userProfile);
+
+  useEffect(() => {
+    setFormData(userProfile);
+  }, [userProfile]);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+  
+  const handleSaveChanges = (e: React.FormEvent) => {
+    e.preventDefault();
+    onProfileUpdate(formData);
+  };
   
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -18,21 +38,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications }) => 
 
       <section className="bg-slate-800 p-8 rounded-lg shadow-lg mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-blue-400">Contact Information</h2>
-        <form className="space-y-4">
+        <form onSubmit={handleSaveChanges} className="space-y-4">
            <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-slate-300 mb-1">First Name</label>
-            <input type="text" id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white" />
+            <input type="text" id="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white" />
           </div>
           <div>
             <label htmlFor="lastName" className="block text-sm font-medium text-slate-300 mb-1">Last Name</label>
-            <input type="text" id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white" />
+            <input type="text" id="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white" />
           </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">Email Address</label>
-            <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white" />
+            <input type="email" id="email" value={formData.email} onChange={handleInputChange} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white" />
           </div>
            <div className="pt-2">
-            <button type="submit" onClick={(e) => e.preventDefault()} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200">Save Changes</button>
+            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200">Save Changes</button>
           </div>
         </form>
       </section>
