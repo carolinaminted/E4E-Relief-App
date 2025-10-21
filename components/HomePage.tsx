@@ -1,0 +1,37 @@
+import React from 'react';
+
+type Page = 'home' | 'apply' | 'profile' | 'support';
+
+interface HomePageProps {
+  navigate: (page: Page) => void;
+}
+
+const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
+  const ActionCard: React.FC<{ title: string; description: string; onClick: () => void; }> = ({ title, description, onClick }) => (
+    <div 
+      className="bg-slate-800 p-6 rounded-lg shadow-lg hover:bg-slate-700/50 transition-all duration-300 cursor-pointer hover:scale-105 transform"
+      onClick={onClick}
+    >
+      <h2 className="text-xl font-bold text-blue-400 mb-2">{title}</h2>
+      <p className="text-slate-400">{description}</p>
+    </div>
+  );
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-full">
+      <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300 mb-4">
+        Welcome to E4E Relief
+      </h1>
+      <p className="text-slate-400 max-w-2xl mb-12">
+        Your portal for assistance and support. Access applications, view your profile, or get help from our support team.
+      </p>
+      <div className="grid md:grid-cols-3 gap-8 w-full max-w-5xl">
+        <ActionCard title="Apply for Aid" description="Submit a new application for financial assistance." onClick={() => navigate('apply')} />
+        <ActionCard title="My Profile" description="View your application history and manage your contact information." onClick={() => navigate('profile')} />
+        <ActionCard title="Get Support" description="Find contact information and answers to frequently asked questions." onClick={() => navigate('support')} />
+      </div>
+    </div>
+  );
+};
+
+export default HomePage;
