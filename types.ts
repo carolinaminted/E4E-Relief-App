@@ -9,7 +9,6 @@ export interface ChatMessage {
   content: string;
 }
 
-// Fix: Define and export UserProfile interface to be shared across components.
 export interface UserProfile {
   firstName: string;
   lastName: string;
@@ -22,5 +21,5 @@ export interface Application {
   event: string;
   requestedAmount: number;
   submittedDate: string;
-  status: 'Submitted';
+  status: 'Submitted' | 'Awarded' | 'Declined';
 }

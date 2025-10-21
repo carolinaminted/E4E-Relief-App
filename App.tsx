@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import type { UserProfile, Application } from './types';
+import { evaluateApplicationEligibility } from './services/geminiService';
 
 // Page Components
 import LoginPage from './components/LoginPage';
@@ -31,7 +32,7 @@ const initialApplications: Record<string, Application[]> = {
       event: 'Flood',
       requestedAmount: 2500,
       submittedDate: '2023-08-12',
-      status: 'Submitted',
+      status: 'Awarded',
     },
   ],
 };
@@ -91,14 +92,20 @@ function App() {
     setPage(targetPage);
   }, []);
 
-  const handleApplicationSubmit = useCallback((newApplicationData: Omit<Application, 'id' | 'submittedDate' | 'status'>) => {
+  const handleApplicationSubmit = useCallback(async (newApplicationData: Omit<Application, 'id' | 'submittedDate' | 'status'>) => {
     if (!currentUser) return;
     
+    const tempId = `APP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    const appForEvaluation = { ...newApplicationData, id: tempId };
+
+    // Call the AI service to get the status
+    const decision = await evaluateApplicationEligibility(appForEvaluation);
+
     const newApplication: Application = {
       ...newApplicationData,
-      id: `APP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+      id: tempId,
       submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
-      status: 'Submitted',
+      status: decision,
     };
 
     setApplications(prev => ({

@@ -1,5 +1,6 @@
 
 import { GoogleGenAI, Chat } from "@google/genai";
+import type { Application } from '../types';
 
 const API_KEY = process.env.API_KEY;
 
@@ -42,4 +43,42 @@ export function createChatSession(): Chat {
       systemInstruction: applicationContext,
     },
   });
+}
+
+export async function evaluateApplicationEligibility(appData: Omit<Application, 'status' | 'submittedDate'>): Promise<'Awarded' | 'Declined'> {
+  const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+
+  const prompt = `
+    Analyze the following application details based on the strict eligibility rules and return only a single word: "Awarded" or "Declained". Do not provide any other text or explanation.
+
+    **Eligibility Rules:**
+    1. Event: Must be exactly "Tornado" or "Flood".
+    2. Hire Date: Must be a date on or before today's date (${today}).
+    3. Requested Amount: Must be less than or equal to 10000.
+
+    **Applicant Details:**
+    - Application ID: ${appData.id}
+    - Hire Date: ${appData.hireDate}
+    - Event: ${appData.event}
+    - Requested Amount: ${appData.requestedAmount}
+
+    **Decision:**
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+    });
+    const decision = response.text.trim();
+    if (decision === 'Awarded' || decision === 'Declined') {
+      return decision;
+    }
+    // Fallback if the model returns unexpected text
+    return 'Declined';
+  } catch (error) {
+    console.error("AI eligibility check failed:", error);
+    // Default to a safe status in case of API error
+    return 'Declined';
+  }
 }

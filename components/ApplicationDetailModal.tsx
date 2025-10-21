@@ -7,6 +7,12 @@ interface ApplicationDetailModalProps {
   onClose: () => void;
 }
 
+const statusStyles: Record<Application['status'], string> = {
+    Submitted: 'bg-yellow-800 text-yellow-100',
+    Awarded: 'bg-green-800 text-green-100',
+    Declined: 'bg-red-800 text-red-100',
+};
+
 const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({ application, onClose }) => {
   if (!application) return null;
 
@@ -36,11 +42,11 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({ applica
             <span className="font-semibold text-slate-400">Application ID:</span>
             <span className="font-mono">{application.id}</span>
           </div>
-          <div className="flex justify-between border-b border-slate-700 pb-2">
+          <div className="flex justify-between border-b border-slate-700 pb-2 items-center">
             <span className="font-semibold text-slate-400">Status:</span>
-            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                application.status === 'Submitted' ? 'bg-blue-800 text-blue-100' : 'bg-gray-700 text-gray-100'
-              }`}>{application.status}</span>
+            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[application.status]}`}>
+                {application.status}
+            </span>
           </div>
           <div className="flex justify-between border-b border-slate-700 pb-2">
             <span className="font-semibold text-slate-400">Submitted Date:</span>
