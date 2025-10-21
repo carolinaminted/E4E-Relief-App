@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HomePage from './components/HomePage';
 import ChatbotWidget from './components/ChatbotWidget';
 import ApplyPage from './components/ApplyPage';
@@ -17,19 +17,62 @@ interface UserProfile {
   email: string;
 }
 
+interface UserData {
+  profile: UserProfile;
+  password?: string; // Stored for simulation purposes
+  applications: Application[];
+}
+
+interface UserDatabase {
+  [email: string]: UserData;
+}
+
+const defaultUserProfile: UserProfile = {
+  firstName: 'Jane',
+  lastName: 'Doe',
+  email: 'jane.doe@example.com'
+};
+
+// Helper to get the DB from localStorage
+const getUserDb = (): UserDatabase => {
+  const db = localStorage.getItem('userProfilesDb');
+  return db ? JSON.parse(db) : {};
+};
+
+// Helper to save the DB to localStorage
+const saveUserDb = (db: UserDatabase) => {
+  localStorage.setItem('userProfilesDb', JSON.stringify(db));
+};
+
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authView, setAuthView] = useState<AuthView>('login');
-  
-  const [currentPage, setCurrentPage] = useState<Page>('home');
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    firstName: 'Jane',
-    lastName: 'Doe',
-    email: 'jane.doe@example.com'
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(() => {
+    return localStorage.getItem('currentUserEmail');
   });
 
+  const [authView, setAuthView] = useState<AuthView>('login');
+  const [currentPage, setCurrentPage] = useState<Page>('home');
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [applications, setApplications] = useState<Application[]>([]);
+
+  useEffect(() => {
+    // Load user data if there's a logged-in user
+    if (currentUserEmail) {
+      const db = getUserDb();
+      const userData = db[currentUserEmail];
+      if (userData) {
+        setUserProfile(userData.profile);
+        setApplications(userData.applications || []);
+      } else {
+        // Data inconsistency, log out
+        handleLogout();
+      }
+    } else {
+      setUserProfile(null);
+      setApplications([]);
+    }
+  }, [currentUserEmail]);
+  
   const navigate = (page: Page) => {
     window.scrollTo(0, 0);
     setCurrentPage(page);
@@ -41,47 +84,78 @@ const App: React.FC = () => {
   };
 
   const handleApplicationSubmit = (newApplication: Omit<Application, 'id' | 'submittedDate' | 'status'>) => {
+    if (!currentUserEmail) return;
+
     const submittedApplication: Application = {
       ...newApplication,
       id: new Date().toISOString(),
-      // Fix: Corrected typo from toLocaleDateCString to toLocaleDateString.
       submittedDate: new Date().toLocaleDateString(),
       status: 'Submitted',
     };
-    setApplications(prev => [submittedApplication, ...prev]);
+    
+    const db = getUserDb();
+    const newApplications = [submittedApplication, ...(db[currentUserEmail].applications || [])];
+    db[currentUserEmail].applications = newApplications;
+    saveUserDb(db);
+    
+    setApplications(newApplications);
     navigate('profile');
     showSnackbar('Application submitted successfully!');
   };
   
   const handleProfileUpdate = (updatedProfile: UserProfile) => {
-    setUserProfile(updatedProfile);
-    showSnackbar('Profile updated successfully!');
+    if (!currentUserEmail) return;
+
+    const db = getUserDb();
+    if (db[currentUserEmail]) {
+      db[currentUserEmail].profile = updatedProfile;
+      saveUserDb(db);
+      setUserProfile(updatedProfile);
+      showSnackbar('Profile updated successfully!');
+    }
   };
 
-  const handleLogin = () => {
-    // In a real app, you'd verify credentials and fetch user data here
-    setIsAuthenticated(true);
+  const handleLogin = (email: string, password: string): boolean => {
+    const db = getUserDb();
+    const userData = db[email];
+    if (userData && userData.password === password) {
+      localStorage.setItem('currentUserEmail', email);
+      setCurrentUserEmail(email);
+      return true;
+    }
+    return false;
   };
 
-  const handleRegister = () => {
-    // In a real app, you'd create a user here
-    setIsAuthenticated(true);
+  const handleRegister = (email: string, password: string): boolean => {
+    const db = getUserDb();
+    if (db[email]) {
+      return false; // User already exists
+    }
+    
+    db[email] = {
+      password: password,
+      profile: {
+        ...defaultUserProfile,
+        email: email,
+      },
+      applications: [],
+    };
+    saveUserDb(db);
+    
+    // Automatically log in after registration
+    localStorage.setItem('currentUserEmail', email);
+    setCurrentUserEmail(email);
+    return true;
   };
   
   const handleLogout = () => {
-    setIsAuthenticated(false);
+    localStorage.removeItem('currentUserEmail');
+    setCurrentUserEmail(null);
     setCurrentPage('home');
-    setApplications([]);
     setAuthView('login');
-    // Reset profile to default on logout
-    setUserProfile({
-        firstName: 'Jane',
-        lastName: 'Doe',
-        email: 'jane.doe@example.com'
-    });
   };
 
-  if (!isAuthenticated) {
+  if (!currentUserEmail || !userProfile) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white font-sans p-4">
         {authView === 'login' ? (

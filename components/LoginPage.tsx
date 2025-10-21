@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (email: string, password: string) => boolean;
   switchToRegister: () => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, switchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Basic validation for demo purposes
-    if (email && password) {
-      onLogin();
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      return;
+    }
+    const success = onLogin(email, password);
+    if (!success) {
+      setError('Invalid email or password. Please try again.');
+    } else {
+      setError('');
     }
   };
 
@@ -32,6 +39,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, switchToRegister }) => {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
             required
+            autoComplete="email"
           />
         </div>
         <div>
@@ -43,8 +51,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, switchToRegister }) => {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
             required
+            autoComplete="current-password"
           />
         </div>
+        {error && <p className="text-red-400 text-sm">{error}</p>}
         <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
           Sign In
         </button>

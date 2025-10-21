@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface RegisterPageProps {
-  onRegister: () => void;
+  onRegister: (email: string, password: string) => boolean;
   switchToLogin: () => void;
 }
 
@@ -13,14 +13,20 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
-    setError('');
-    // Basic validation for demo purposes
-    if (email && password) {
-      onRegister();
+    
+    const success = onRegister(email, password);
+    if (!success) {
+      setError('An account with this email already exists.');
+    } else {
+      setError('');
     }
   };
 
@@ -39,6 +45,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
             onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
             required
+            autoComplete="email"
           />
         </div>
         <div>
@@ -50,6 +57,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
             onChange={(e) => setPassword(e.target.value)}
             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
             required
+            autoComplete="new-password"
           />
         </div>
          <div>
@@ -61,6 +69,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
             required
+            autoComplete="new-password"
           />
         </div>
         {error && <p className="text-red-400 text-sm">{error}</p>}

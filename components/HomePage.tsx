@@ -26,7 +26,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
         Your portal for assistance and support. Access applications, view your profile, or get help from our support team.
       </p>
       <div className="grid md:grid-cols-3 gap-8 w-full max-w-5xl">
-        <ActionCard title="Apply for Aid" description="Submit a new application for financial assistance." onClick={() => navigate('apply')} />
+        <ActionCard title="Apply for Relief" description="Submit a new application for financial assistance." onClick={() => navigate('apply')} />
         <ActionCard title="My Profile" description="View your application history and manage your contact information." onClick={() => navigate('profile')} />
         <ActionCard title="Get Support" description="Find contact information and answers to frequently asked questions." onClick={() => navigate('support')} />
       </div>
