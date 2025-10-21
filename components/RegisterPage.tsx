@@ -1,30 +1,26 @@
 import React, { useState } from 'react';
 
 interface RegisterPageProps {
-  onRegister: (email: string, password: string) => boolean;
+  onRegister: (firstName: string, lastName: string, email: string, password: string) => boolean;
   switchToLogin: () => void;
 }
 
 const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }) => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (!firstName || !lastName || !email || !password) {
+      setError('All fields are required.');
       return;
     }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-    
-    const success = onRegister(email, password);
+    const success = onRegister(firstName, lastName, email, password);
     if (!success) {
-      setError('An account with this email already exists.');
+      setError('This email is already registered. Please try logging in.');
     } else {
       setError('');
     }
@@ -36,11 +32,37 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
         Create Your Account
       </h1>
       <form onSubmit={handleSubmit} className="space-y-6 bg-slate-800 p-8 rounded-lg shadow-lg">
+        <div className="flex gap-4">
+            <div className="flex-1">
+                <label htmlFor="firstName" className="block text-sm font-medium text-slate-300 mb-2">First Name</label>
+                <input
+                    type="text"
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
+                    required
+                    autoComplete="given-name"
+                />
+            </div>
+            <div className="flex-1">
+                <label htmlFor="lastName" className="block text-sm font-medium text-slate-300 mb-2">Last Name</label>
+                <input
+                    type="text"
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
+                    required
+                    autoComplete="family-name"
+                />
+            </div>
+        </div>
         <div>
-          <label htmlFor="email-reg" className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+          <label htmlFor="email-register" className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
           <input
             type="email"
-            id="email-reg"
+            id="email-register"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
@@ -49,24 +71,12 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
           />
         </div>
         <div>
-          <label htmlFor="password-reg" className="block text-sm font-medium text-slate-300 mb-2">Password</label>
+          <label htmlFor="password-register" className="block text-sm font-medium text-slate-300 mb-2">Password</label>
           <input
             type="password"
-            id="password-reg"
+            id="password-register"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
-            required
-            autoComplete="new-password"
-          />
-        </div>
-         <div>
-          <label htmlFor="confirm-password-reg" className="block text-sm font-medium text-slate-300 mb-2">Confirm Password</label>
-          <input
-            type="password"
-            id="confirm-password-reg"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
             required
             autoComplete="new-password"

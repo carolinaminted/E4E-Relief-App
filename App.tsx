@@ -1,180 +1,156 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import type { UserProfile, Application } from './types';
+
+// Page Components
+import LoginPage from './components/LoginPage';
+import RegisterPage from './components/RegisterPage';
 import HomePage from './components/HomePage';
-import ChatbotWidget from './components/ChatbotWidget';
 import ApplyPage from './components/ApplyPage';
 import ProfilePage from './components/ProfilePage';
 import SupportPage from './components/SupportPage';
-import LoginPage from './components/LoginPage';
-import RegisterPage from './components/RegisterPage';
-import type { Application } from './types';
+import SubmissionSuccessPage from './components/SubmissionSuccessPage';
+import ChatbotWidget from './components/ChatbotWidget';
 
-type Page = 'home' | 'apply' | 'profile' | 'support';
-type AuthView = 'login' | 'register';
+type Page = 'login' | 'register' | 'home' | 'apply' | 'profile' | 'support' | 'submissionSuccess';
 
-interface UserProfile {
-  firstName: string;
-  lastName: string;
-  email: string;
-}
-
-interface UserData {
-  profile: UserProfile;
-  password?: string; // Stored for simulation purposes
-  applications: Application[];
-}
-
-interface UserDatabase {
-  [email: string]: UserData;
-}
-
-const defaultUserProfile: UserProfile = {
-  firstName: 'Jane',
-  lastName: 'Doe',
-  email: 'jane.doe@example.com'
+// --- MOCK DATABASE ---
+const initialUsers: Record<string, UserProfile & { passwordHash: string }> = {
+  'user@example.com': {
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'user@example.com',
+    passwordHash: 'password123', // In a real app, this would be a hash
+  },
 };
 
-// Helper to get the DB from localStorage
-const getUserDb = (): UserDatabase => {
-  const db = localStorage.getItem('userProfilesDb');
-  return db ? JSON.parse(db) : {};
-};
-
-// Helper to save the DB to localStorage
-const saveUserDb = (db: UserDatabase) => {
-  localStorage.setItem('userProfilesDb', JSON.stringify(db));
-};
-
-const App: React.FC = () => {
-  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(() => {
-    return localStorage.getItem('currentUserEmail');
-  });
-
-  const [authView, setAuthView] = useState<AuthView>('login');
-  const [currentPage, setCurrentPage] = useState<Page>('home');
-  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [applications, setApplications] = useState<Application[]>([]);
-
-  useEffect(() => {
-    // Load user data if there's a logged-in user
-    if (currentUserEmail) {
-      const db = getUserDb();
-      const userData = db[currentUserEmail];
-      if (userData) {
-        setUserProfile(userData.profile);
-        setApplications(userData.applications || []);
-      } else {
-        // Data inconsistency, log out
-        handleLogout();
-      }
-    } else {
-      setUserProfile(null);
-      setApplications([]);
-    }
-  }, [currentUserEmail]);
-  
-  const navigate = (page: Page) => {
-    window.scrollTo(0, 0);
-    setCurrentPage(page);
-  };
-
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setTimeout(() => setSnackbarMessage(null), 3000);
-  };
-
-  const handleApplicationSubmit = (newApplication: Omit<Application, 'id' | 'submittedDate' | 'status'>) => {
-    if (!currentUserEmail) return;
-
-    const submittedApplication: Application = {
-      ...newApplication,
-      id: new Date().toISOString(),
-      submittedDate: new Date().toLocaleDateString(),
+const initialApplications: Record<string, Application[]> = {
+  'user@example.com': [
+    {
+      id: 'APP-1001',
+      hireDate: '2020-05-15',
+      event: 'Flood',
+      requestedAmount: 2500,
+      submittedDate: '2023-08-12',
       status: 'Submitted',
-    };
-    
-    const db = getUserDb();
-    const newApplications = [submittedApplication, ...(db[currentUserEmail].applications || [])];
-    db[currentUserEmail].applications = newApplications;
-    saveUserDb(db);
-    
-    setApplications(newApplications);
-    navigate('profile');
-    showSnackbar('Application submitted successfully!');
-  };
-  
-  const handleProfileUpdate = (updatedProfile: UserProfile) => {
-    if (!currentUserEmail) return;
+    },
+  ],
+};
+// --- END MOCK DATABASE ---
 
-    const db = getUserDb();
-    if (db[currentUserEmail]) {
-      db[currentUserEmail].profile = updatedProfile;
-      saveUserDb(db);
-      setUserProfile(updatedProfile);
-      showSnackbar('Profile updated successfully!');
+function App() {
+  const [page, setPage] = useState<Page>('login');
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [users, setUsers] = useState(initialUsers);
+  const [applications, setApplications] = useState(initialApplications);
+  const [lastSubmittedApp, setLastSubmittedApp] = useState<Application | null>(null);
+
+  const userApplications = useMemo(() => {
+    if (currentUser) {
+      return applications[currentUser.email] || [];
     }
-  };
+    return [];
+  }, [currentUser, applications]);
 
-  const handleLogin = (email: string, password: string): boolean => {
-    const db = getUserDb();
-    const userData = db[email];
-    if (userData && userData.password === password) {
-      localStorage.setItem('currentUserEmail', email);
-      setCurrentUserEmail(email);
+  const handleLogin = useCallback((email: string, password: string): boolean => {
+    const user = users[email];
+    if (user && user.passwordHash === password) {
+      setCurrentUser({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      });
+      setPage('home');
       return true;
     }
     return false;
-  };
-
-  const handleRegister = (email: string, password: string): boolean => {
-    const db = getUserDb();
-    if (db[email]) {
+  }, [users]);
+  
+  const handleRegister = useCallback((firstName: string, lastName: string, email: string, password: string): boolean => {
+    if (users[email]) {
       return false; // User already exists
     }
-    
-    db[email] = {
-      password: password,
-      profile: {
-        ...defaultUserProfile,
-        email: email,
-      },
-      applications: [],
+    const newUser = {
+      firstName,
+      lastName,
+      email,
+      passwordHash: password,
     };
-    saveUserDb(db);
-    
-    // Automatically log in after registration
-    localStorage.setItem('currentUserEmail', email);
-    setCurrentUserEmail(email);
+    setUsers(prev => ({ ...prev, [email]: newUser }));
+    setApplications(prev => ({ ...prev, [email]: [] }));
+    setCurrentUser({ firstName, lastName, email });
+    setPage('home');
     return true;
+  }, [users]);
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setPage('login');
   };
   
-  const handleLogout = () => {
-    localStorage.removeItem('currentUserEmail');
-    setCurrentUserEmail(null);
-    setCurrentPage('home');
-    setAuthView('login');
-  };
+  const navigate = useCallback((targetPage: Page) => {
+    setPage(targetPage);
+  }, []);
 
-  if (!currentUserEmail || !userProfile) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white font-sans p-4">
-        {authView === 'login' ? (
-          <LoginPage onLogin={handleLogin} switchToRegister={() => setAuthView('register')} />
-        ) : (
-          <RegisterPage onRegister={handleRegister} switchToLogin={() => setAuthView('login')} />
-        )}
-      </div>
-    );
-  }
+  const handleApplicationSubmit = useCallback((newApplicationData: Omit<Application, 'id' | 'submittedDate' | 'status'>) => {
+    if (!currentUser) return;
+    
+    const newApplication: Application = {
+      ...newApplicationData,
+      id: `APP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+      submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
+      status: 'Submitted',
+    };
 
+    setApplications(prev => ({
+      ...prev,
+      [currentUser.email]: [...(prev[currentUser.email] || []), newApplication],
+    }));
+    setLastSubmittedApp(newApplication);
+    setPage('submissionSuccess');
+
+  }, [currentUser]);
+
+  const handleProfileUpdate = useCallback((updatedProfile: UserProfile) => {
+    if (!currentUser) return;
+
+    setCurrentUser(updatedProfile);
+    setUsers(prev => {
+        const currentUserData = prev[currentUser.email];
+        if (currentUserData) {
+            return {
+                ...prev,
+                [currentUser.email]: {
+                    ...currentUserData,
+                    firstName: updatedProfile.firstName,
+                    lastName: updatedProfile.lastName,
+                }
+            };
+        }
+        return prev;
+    });
+    // Maybe show a success message
+  }, [currentUser]);
+  
   const renderPage = () => {
-    switch (currentPage) {
+    if (!currentUser) {
+      switch (page) {
+        case 'register':
+          return <RegisterPage onRegister={handleRegister} switchToLogin={() => setPage('login')} />;
+        default:
+          return <LoginPage onLogin={handleLogin} switchToRegister={() => setPage('register')} />;
+      }
+    }
+    
+    switch (page) {
       case 'apply':
         return <ApplyPage navigate={navigate} onSubmit={handleApplicationSubmit} />;
       case 'profile':
-        return <ProfilePage navigate={navigate} applications={applications} userProfile={userProfile} onProfileUpdate={handleProfileUpdate} />;
+        return <ProfilePage navigate={navigate} applications={userApplications} userProfile={currentUser} onProfileUpdate={handleProfileUpdate} />;
       case 'support':
         return <SupportPage navigate={navigate} />;
+      case 'submissionSuccess':
+        if (!lastSubmittedApp) return <HomePage navigate={navigate} />;
+        return <SubmissionSuccessPage application={lastSubmittedApp} onGoToProfile={() => setPage('profile')} />;
       case 'home':
       default:
         return <HomePage navigate={navigate} />;
@@ -182,43 +158,33 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-900 text-white font-sans">
-      <header className="bg-slate-900/70 backdrop-blur-md p-4 border-b border-slate-700 shadow-lg sticky top-0 z-10 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300 cursor-pointer" onClick={() => navigate('home')}>
-          Welcome, {userProfile.firstName}
-        </h1>
-        <button 
-          onClick={handleLogout}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 text-sm"
-        >
-          Sign Out
-        </button>
-      </header>
-      <main className="flex-1">
-        {renderPage()}
-      </main>
-      
-      {snackbarMessage && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-out">
-          {snackbarMessage}
-        </div>
+    <div className="bg-slate-900 text-white min-h-screen font-sans flex flex-col">
+      {currentUser && (
+        <header className="bg-slate-800/50 backdrop-blur-sm p-4 flex justify-between items-center shadow-md sticky top-0 z-40 border-b border-slate-700">
+          <div className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+            </svg>
+            <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300">
+              E4E Relief
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-slate-300">Welcome, {currentUser.firstName}</span>
+            <button onClick={handleLogout} className="bg-blue-600/50 hover:bg-blue-600/80 text-white font-semibold py-2 px-4 rounded-md text-sm transition-colors duration-200">
+              Logout
+            </button>
+          </div>
+        </header>
       )}
 
-      <ChatbotWidget />
+      <main className={`flex-1 flex flex-col ${!currentUser ? 'items-center justify-center' : ''}`}>
+        {renderPage()}
+      </main>
 
-      <style>{`
-        @keyframes fade-in-out {
-          0% { opacity: 0; transform: translate(-50%, 10px); }
-          10% { opacity: 1; transform: translate(-50%, 0); }
-          90% { opacity: 1; transform: translate(-50%, 0); }
-          100% { opacity: 0; transform: translate(-50%, 10px); }
-        }
-        .animate-fade-in-out {
-          animation: fade-in-out 3s ease-in-out forwards;
-        }
-      `}</style>
+      {currentUser && <ChatbotWidget />}
     </div>
   );
-};
+}
 
 export default App;
