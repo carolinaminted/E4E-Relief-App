@@ -3,7 +3,7 @@ import type { Application } from '../types';
 
 interface ApplyPageProps {
   navigate: (page: 'home' | 'profile') => void;
-  onSubmit: (application: Omit<Application, 'id' | 'submittedDate' | 'status'>) => void;
+  onSubmit: (application: Omit<Application, 'id' | 'submittedDate' | 'status'>) => Promise<void>;
 }
 
 const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit }) => {
@@ -11,9 +11,12 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit }) => {
   const [event, setEvent] = useState('');
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     if (!hireDate || !event || !amount) {
       setError('All fields are required.');
       return;
@@ -23,8 +26,18 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit }) => {
       setError('Please enter a valid amount greater than zero.');
       return;
     }
+    
     setError('');
-    onSubmit({ hireDate, event, requestedAmount });
+    setIsSubmitting(true);
+
+    try {
+      await onSubmit({ hireDate, event, requestedAmount });
+    } catch (err) {
+      console.error("Submission failed:", err);
+      setError("An unexpected error occurred. Please try again.");
+      setIsSubmitting(false); // Re-enable button on error
+    } 
+    // On success, the app navigates away, so no need to set isSubmitting to false here.
   };
 
   return (
@@ -41,6 +54,7 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit }) => {
             onChange={(e) => setHireDate(e.target.value)}
             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
             required
+            disabled={isSubmitting}
           />
         </div>
         <div>
@@ -51,6 +65,7 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit }) => {
             onChange={(e) => setEvent(e.target.value)}
             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"
             required
+            disabled={isSubmitting}
           >
             <option value="" disabled>Select an event type</option>
             <option value="Flood">Flood</option>
@@ -71,11 +86,24 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit }) => {
             min="0.01"
             step="0.01"
             required
+            disabled={isSubmitting}
           />
         </div>
         {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
-          Submit Application
+        <button 
+          type="submit" 
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors duration-200 flex justify-center items-center h-12 disabled:bg-slate-500 disabled:cursor-wait"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse [animation-delay:-0.3s]"></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse [animation-delay:-0.15s]"></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            </div>
+          ) : (
+            'Submit Application'
+          )}
         </button>
       </form>
     </div>
