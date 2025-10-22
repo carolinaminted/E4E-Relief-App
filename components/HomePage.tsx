@@ -19,12 +19,9 @@ const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-full">
-      <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300 mb-4">
+      <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300 mb-12">
         Welcome to E4E Relief
       </h1>
-      <p className="text-slate-400 max-w-2xl mb-12">
-        Your portal for assistance and support. Access applications, view your profile, or get help from our support team.
-      </p>
       <div className="grid md:grid-cols-3 gap-8 w-full max-w-5xl">
         <ActionCard title="Apply for Relief" description="Submit a new application for financial assistance." onClick={() => navigate('apply')} />
         <ActionCard title="My Profile" description="View your application history and manage your contact information." onClick={() => navigate('profile')} />
