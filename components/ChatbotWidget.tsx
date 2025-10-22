@@ -65,7 +65,7 @@ const ChatbotWidget: React.FC = () => {
   return (
     <>
       <div 
-        className={`fixed bottom-24 right-8 w-full max-w-sm h-[calc(100vh-8rem)] max-h-[600px] bg-[#004b8d] rounded-lg shadow-2xl flex flex-col z-50 border border-[#002a50] transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+        className={`fixed bottom-24 w-full max-w-sm h-[calc(100vh-8rem)] max-h-[600px] bg-[#004b8d] rounded-lg shadow-2xl flex flex-col z-50 border border-[#002a50] transition-all duration-300 ease-in-out left-1/2 -translate-x-1/2 md:left-8 md:-translate-x-0 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
         aria-hidden={!isOpen}
       >
        <header className="bg-[#003a70]/70 p-4 border-b border-[#002a50] shadow-lg flex justify-between items-center rounded-t-lg flex-shrink-0">
@@ -83,7 +83,7 @@ const ChatbotWidget: React.FC = () => {
 
     <button
         onClick={toggleChat}
-        className="fixed bottom-8 right-8 bg-[#ff8400] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-[#e67700] transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#ff8400] focus:ring-opacity-50 z-50"
+        className="fixed bottom-8 left-8 bg-[#ff8400] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-[#e67700] transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#ff8400] focus:ring-opacity-50 z-50"
         aria-label={isOpen ? "Close Chat" : "Open Chat"}
       >
         {isOpen ? (
