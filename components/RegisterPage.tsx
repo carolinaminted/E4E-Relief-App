@@ -34,7 +34,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
       <form onSubmit={handleSubmit} className="space-y-6 bg-[#004b8d] p-8 rounded-lg shadow-lg">
         <div className="flex gap-4">
             <div className="flex-1">
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-2">First Name</label>
+                <label htmlFor="firstName" className="block text-sm font-medium text-white mb-2">First Name</label>
                 <input
                     type="text"
                     id="firstName"
@@ -46,7 +46,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
                 />
             </div>
             <div className="flex-1">
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+                <label htmlFor="lastName" className="block text-sm font-medium text-white mb-2">Last Name</label>
                 <input
                     type="text"
                     id="lastName"
@@ -59,7 +59,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
             </div>
         </div>
         <div>
-          <label htmlFor="email-register" className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+          <label htmlFor="email-register" className="block text-sm font-medium text-white mb-2">Email Address</label>
           <input
             type="email"
             id="email-register"
@@ -71,7 +71,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
           />
         </div>
         <div>
-          <label htmlFor="password-register" className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+          <label htmlFor="password-register" className="block text-sm font-medium text-white mb-2">Password</label>
           <input
             type="password"
             id="password-register"
@@ -86,7 +86,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
         <button type="submit" className="w-full bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
           Sign Up
         </button>
-        <p className="text-sm text-center text-[#898c8d]">
+        <p className="text-sm text-center text-white">
           Already have an account?{' '}
           <button type="button" onClick={switchToLogin} className="font-medium text-[#ff8400] hover:underline">
             Sign In

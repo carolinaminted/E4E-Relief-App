@@ -43,7 +43,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }) => {
         placeholder="Type your message..."
         rows={1}
         disabled={isLoading}
-        className="flex-1 bg-transparent text-white placeholder-[#898c8d] focus:outline-none resize-none px-2 py-1"
+        className="flex-1 bg-transparent text-white placeholder-gray-300 focus:outline-none resize-none px-2 py-1"
       />
       <button
         onClick={handleSubmit}

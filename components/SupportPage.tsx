@@ -18,7 +18,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ navigate }) => {
           <h2 className="text-xl font-semibold text-[#ff8400] mb-1">Support Phone</h2>
           <a href="tel:800-555-0199" className="text-[#ff8400] hover:underline">(800) 555-0199</a>
         </div>
-        <p className="text-[#898c8d] pt-4 italic">
+        <p className="text-white pt-4 italic">
           You can also chat with the in-app AI assistant for quick answers to common questions.
         </p>
       </div>

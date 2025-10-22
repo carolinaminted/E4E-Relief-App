@@ -46,7 +46,7 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit }) => {
       <h1 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Apply for Relief</h1>
       <form onSubmit={handleSubmit} className="space-y-6 bg-[#004b8d] p-8 rounded-lg shadow-lg">
         <div>
-          <label htmlFor="hireDate" className="block text-sm font-medium text-gray-300 mb-2">Hire Date</label>
+          <label htmlFor="hireDate" className="block text-sm font-medium text-white mb-2">Hire Date</label>
           <input
             type="date"
             id="hireDate"
@@ -58,7 +58,7 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit }) => {
           />
         </div>
         <div>
-          <label htmlFor="event" className="block text-sm font-medium text-gray-300 mb-2">Event</label>
+          <label htmlFor="event" className="block text-sm font-medium text-white mb-2">Event</label>
           <select
             id="event"
             value={event}
@@ -75,7 +75,7 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit }) => {
           </select>
         </div>
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-2">Requested Relief Payment ($)</label>
+          <label htmlFor="amount" className="block text-sm font-medium text-white mb-2">Requested Relief Payment ($)</label>
           <input
             type="number"
             id="amount"

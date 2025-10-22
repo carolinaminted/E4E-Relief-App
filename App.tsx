@@ -168,16 +168,16 @@ function App() {
     <div className="bg-[#003a70] text-white min-h-screen font-sans flex flex-col">
       {currentUser && (
         <header className="bg-[#004b8d]/80 backdrop-blur-sm p-4 flex justify-between items-center shadow-md sticky top-0 z-40 border-b border-[#002a50]">
-          <div className="flex items-center gap-2">
+          <button onClick={() => navigate('home')} className="flex items-center gap-2 transition-opacity duration-200 hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#003a70] focus:ring-[#ff8400] rounded-md p-1" aria-label="Go to Home page">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-[#edda26]" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
             </svg>
             <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
               E4E Relief
             </h1>
-          </div>
+          </button>
           <div className="flex items-center gap-4">
-            <span className="text-gray-300">Welcome, {currentUser.firstName}</span>
+            <span className="text-gray-200">Welcome, {currentUser.firstName}</span>
             <button onClick={handleLogout} className="bg-[#ff8400]/80 hover:bg-[#ff8400] text-white font-semibold py-2 px-4 rounded-md text-sm transition-colors duration-200">
               Logout
             </button>

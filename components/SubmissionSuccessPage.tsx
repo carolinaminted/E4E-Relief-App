@@ -16,12 +16,12 @@ const SubmissionSuccessPage: React.FC<SubmissionSuccessPageProps> = ({ applicati
         <h1 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#edda26] to-[#ff8400]">
           Submission Successful!
         </h1>
-        <p className="text-gray-300 mb-2">Your application for relief has been received.</p>
+        <p className="text-white mb-2">Your application for relief has been received.</p>
         <div className="bg-[#005ca0] rounded-md px-4 py-2 my-6 inline-block">
-          <p className="text-[#898c8d] text-sm">Your Application ID is:</p>
+          <p className="text-white opacity-80 text-sm">Your Application ID is:</p>
           <p className="text-white font-mono text-lg">{application.id}</p>
         </div>
-        <p className="text-[#898c8d] max-w-sm mx-auto mb-8">
+        <p className="text-white max-w-sm mx-auto mb-8">
           You can track the status of your application in the "My Applications" section of your profile page.
         </p>
         <button

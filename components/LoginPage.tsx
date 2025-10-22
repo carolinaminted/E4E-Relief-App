@@ -31,7 +31,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, switchToRegister }) => {
       </h1>
       <form onSubmit={handleSubmit} className="space-y-6 bg-[#004b8d] p-8 rounded-lg shadow-lg">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+          <label htmlFor="email" className="block text-sm font-medium text-white mb-2">Email Address</label>
           <input
             type="email"
             id="email"
@@ -43,7 +43,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, switchToRegister }) => {
           />
         </div>
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+          <label htmlFor="password" className="block text-sm font-medium text-white mb-2">Password</label>
           <input
             type="password"
             id="password"
@@ -58,7 +58,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, switchToRegister }) => {
         <button type="submit" className="w-full bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
           Sign In
         </button>
-        <p className="text-sm text-center text-[#898c8d]">
+        <p className="text-sm text-center text-white">
           Don't have an account?{' '}
           <button type="button" onClick={switchToRegister} className="font-medium text-[#ff8400] hover:underline">
             Sign Up

@@ -13,7 +13,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
       onClick={onClick}
     >
       <h2 className="text-xl font-bold text-[#ff8400] mb-2">{title}</h2>
-      <p className="text-[#898c8d]">{description}</p>
+      <p className="text-white">{description}</p>
     </div>
   );
 
