@@ -9,17 +9,17 @@ interface HomePageProps {
 const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
   const ActionCard: React.FC<{ title: string; description: string; onClick: () => void; }> = ({ title, description, onClick }) => (
     <div 
-      className="bg-slate-800 p-6 rounded-lg shadow-lg hover:bg-slate-700/50 transition-all duration-300 cursor-pointer hover:scale-105 transform"
+      className="bg-[#004b8d] p-6 rounded-lg shadow-lg hover:bg-[#005ca0]/50 transition-all duration-300 cursor-pointer hover:scale-105 transform"
       onClick={onClick}
     >
-      <h2 className="text-xl font-bold text-blue-400 mb-2">{title}</h2>
-      <p className="text-slate-400">{description}</p>
+      <h2 className="text-xl font-bold text-[#ff8400] mb-2">{title}</h2>
+      <p className="text-[#898c8d]">{description}</p>
     </div>
   );
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-full">
-      <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300 mb-12">
+      <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-12">
         Welcome to E4E Relief
       </h1>
       <div className="grid md:grid-cols-3 gap-8 w-full max-w-5xl">

@@ -10,8 +10,8 @@ interface ProfilePageProps {
 }
 
 const statusStyles: Record<Application['status'], string> = {
-    Submitted: 'text-yellow-300',
-    Awarded: 'text-green-400',
+    Submitted: 'text-[#ff8400]',
+    Awarded: 'text-[#edda26]',
     Declined: 'text-red-400',
 };
 
@@ -26,51 +26,51 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <button onClick={() => navigate('home')} className="text-blue-400 hover:text-blue-300 mb-6">&larr; Back to Home</button>
+      <button onClick={() => navigate('home')} className="text-[#ff8400] hover:text-[#ff9d33] mb-6">&larr; Back to Home</button>
       
       {/* Contact Information Section */}
-      <section className="bg-slate-800 p-8 rounded-lg shadow-lg mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-blue-400">Contact Information</h2>
+      <section className="bg-[#004b8d] p-8 rounded-lg shadow-lg mb-8">
+        <h2 className="text-2xl font-semibold mb-4 text-[#ff8400]">Contact Information</h2>
         <form onSubmit={handleSave} className="space-y-4">
            <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-slate-300 mb-1">First Name</label>
-            <input type="text" id="firstName" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white" />
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-1">First Name</label>
+            <input type="text" id="firstName" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className="w-full bg-[#005ca0] border border-[#005ca0] rounded-md p-2 text-white" />
           </div>
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-slate-300 mb-1">Last Name</label>
-            <input type="text" id="lastName" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-white" />
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-1">Last Name</label>
+            <input type="text" id="lastName" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} className="w-full bg-[#005ca0] border border-[#005ca0] rounded-md p-2 text-white" />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">Email Address</label>
-            <input type="email" id="email" value={formData.email} disabled className="w-full bg-slate-900 border border-slate-700 rounded-md p-2 text-slate-400 cursor-not-allowed" />
+            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">Email Address</label>
+            <input type="email" id="email" value={formData.email} disabled className="w-full bg-[#003a70] border border-[#002a50] rounded-md p-2 text-[#898c8d] cursor-not-allowed" />
           </div>
            <div className="pt-2">
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200">Save Changes</button>
+            <button type="submit" className="bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-4 rounded-md transition-colors duration-200">Save Changes</button>
           </div>
         </form>
       </section>
 
       {/* Applications Section */}
-      <section className="bg-slate-800 p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold mb-4 text-blue-400">My Applications</h2>
+      <section className="bg-[#004b8d] p-8 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-semibold mb-4 text-[#ff8400]">My Applications</h2>
         <div className="space-y-4">
           {applications.length > 0 ? (
             applications.map(app => (
-              <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-slate-700 p-4 rounded-md flex justify-between items-center hover:bg-slate-600/50 transition-colors duration-200">
+              <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[#005ca0] p-4 rounded-md flex justify-between items-center hover:bg-[#005ca0]/50 transition-colors duration-200">
                 <div>
                   <p className="font-bold text-lg">{app.event}</p>
-                  <p className="text-sm text-slate-400">Submitted: {app.submittedDate}</p>
+                  <p className="text-sm text-[#898c8d]">Submitted: {app.submittedDate}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-lg text-teal-300">${app.requestedAmount.toFixed(2)}</p>
-                  <p className="text-sm text-slate-400">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
+                  <p className="font-bold text-lg text-[#ff8400]">${app.requestedAmount.toFixed(2)}</p>
+                  <p className="text-sm text-[#898c8d]">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
                 </div>
               </button>
             ))
           ) : (
-            <div className="text-center py-8 bg-slate-900/50 rounded-lg">
-                <p className="text-slate-400">You have not submitted any applications yet.</p>
-                <button onClick={() => navigate('apply')} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">
+            <div className="text-center py-8 bg-[#003a70]/50 rounded-lg">
+                <p className="text-[#898c8d]">You have not submitted any applications yet.</p>
+                <button onClick={() => navigate('apply')} className="mt-4 bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-4 rounded-md">
                 Apply Now
                 </button>
             </div>

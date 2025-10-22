@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import type { ChatMessage } from '../types';
 import ChatMessageBubble from './ChatMessageBubble';
@@ -10,10 +9,10 @@ interface ChatWindowProps {
 
 const LoadingIndicator: React.FC = () => (
     <div className="flex justify-start p-4">
-        <div className="flex items-center space-x-2 bg-slate-700 text-white rounded-lg p-3 max-w-prose animate-pulse">
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <div className="w-2 h-2 bg-blue-400 rounded-full animation-delay-200"></div>
-            <div className="w-2 h-2 bg-blue-400 rounded-full animation-delay-400"></div>
+        <div className="flex items-center space-x-2 bg-[#005ca0] text-white rounded-lg p-3 max-w-prose animate-pulse">
+            <div className="w-2 h-2 bg-[#ff8400] rounded-full"></div>
+            <div className="w-2 h-2 bg-[#ff8400] rounded-full animation-delay-200"></div>
+            <div className="w-2 h-2 bg-[#ff8400] rounded-full animation-delay-400"></div>
         </div>
     </div>
 );
