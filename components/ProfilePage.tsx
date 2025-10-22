@@ -9,6 +9,12 @@ interface ProfilePageProps {
   onProfileUpdate: (updatedProfile: UserProfile) => void;
 }
 
+const statusStyles: Record<Application['status'], string> = {
+    Submitted: 'text-yellow-300',
+    Awarded: 'text-green-400',
+    Declined: 'text-red-400',
+};
+
 const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userProfile, onProfileUpdate }) => {
   const [formData, setFormData] = useState<UserProfile>(userProfile);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
@@ -57,7 +63,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-lg text-teal-300">${app.requestedAmount.toFixed(2)}</p>
-                  <p className="text-sm text-slate-400">Status: <span className="font-medium text-yellow-400">{app.status}</span></p>
+                  <p className="text-sm text-slate-400">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
                 </div>
               </button>
             ))
