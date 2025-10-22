@@ -1,11 +1,15 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import type { Chat } from '@google/genai';
-import { ChatMessage, MessageRole } from '../types';
+import { ChatMessage, MessageRole, Application } from '../types';
 import { createChatSession } from '../services/geminiService';
 import ChatWindow from './ChatWindow';
 import ChatInput from './ChatInput';
 
-const ChatbotWidget: React.FC = () => {
+interface ChatbotWidgetProps {
+  applications: Application[];
+}
+
+const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: MessageRole.MODEL, content: "Hello! I'm the E4E Assistant. How can I help you today?" }
@@ -14,10 +18,12 @@ const ChatbotWidget: React.FC = () => {
   const chatSessionRef = useRef<Chat | null>(null);
 
   useEffect(() => {
-    if (isOpen && !chatSessionRef.current) {
-        chatSessionRef.current = createChatSession();
+    // Re-create the session if the panel is open and applications data changes.
+    // This ensures the AI has the latest context.
+    if (isOpen) {
+        chatSessionRef.current = createChatSession(applications);
     }
-  }, [isOpen]);
+  }, [isOpen, applications]);
 
   const handleSendMessage = useCallback(async (userInput: string) => {
     if (!userInput.trim() || isLoading) return;
@@ -28,7 +34,7 @@ const ChatbotWidget: React.FC = () => {
 
     if (!chatSessionRef.current) {
         // This should not happen if panel is open due to useEffect, but as a fallback
-        chatSessionRef.current = createChatSession();
+        chatSessionRef.current = createChatSession(applications);
     }
 
     try {
@@ -58,7 +64,7 @@ const ChatbotWidget: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, [isLoading, applications]);
 
   const toggleChat = () => setIsOpen(!isOpen);
   

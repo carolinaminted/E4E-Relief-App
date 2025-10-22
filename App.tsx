@@ -189,7 +189,7 @@ function App() {
         {renderPage()}
       </main>
 
-      {currentUser && <ChatbotWidget />}
+      {currentUser && <ChatbotWidget applications={userApplications} />}
     </div>
   );
 }

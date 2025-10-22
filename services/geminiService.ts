@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Chat } from "@google/genai";
 import type { Application } from '../types';
 
@@ -35,12 +34,43 @@ When a user asks a question, you MUST use the information above to form your ans
 `;
 
 
-export function createChatSession(): Chat {
+export function createChatSession(applications?: Application[]): Chat {
+  let dynamicContext = applicationContext;
+
+  if (applications && applications.length > 0) {
+    const applicationList = applications.map(app => 
+      `Application ID: ${app.id}\nEvent: ${app.event}\nAmount: $${app.requestedAmount}\nSubmitted: ${app.submittedDate}\nStatus: ${app.status}`
+    ).join('\n---\n'); // Use a clear separator
+
+    dynamicContext += `
+
+**User's Current Applications**:
+You have access to the user's current application data. When they ask about their applications, use this information to answer.
+
+Here is the data for the user's applications:
+${applicationList}
+
+**Response Formatting Rules**:
+- When you list the details of multiple applications, present them as a simple, clean list.
+- Start with a clear introduction, for example: "You have two previous applications:".
+- For each application, list the details clearly as shown in the data above.
+- **Crucially, DO NOT use any markdown like asterisks (*) for bolding or for list items.** Use plain text only for the application details.
+
+**Example Scenario for a specific application**:
+- If a user asks: "What is the status of my application for the flood?"
+- Your correct response, based on the data, might be: "Your application for the Flood (ID: APP-1001) was submitted on 2023-08-12 and its current status is Awarded."
+`;
+  } else {
+    dynamicContext += `
+
+The user currently has no submitted applications. If they ask about their applications, inform them they haven't submitted any yet.`;
+  }
+  
   const model = 'gemini-2.5-flash';
   return ai.chats.create({
     model: model,
     config: {
-      systemInstruction: applicationContext,
+      systemInstruction: dynamicContext,
     },
   });
 }
@@ -49,7 +79,7 @@ export async function evaluateApplicationEligibility(appData: Omit<Application, 
   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
   const prompt = `
-    Analyze the following application details based on the strict eligibility rules and return only a single word: "Awarded" or "Declained". Do not provide any other text or explanation.
+    Analyze the following application details based on the strict eligibility rules and return only a single word: "Awarded" or "Declined". Do not provide any other text or explanation.
 
     **Eligibility Rules:**
     1. Event: Must be exactly "Tornado" or "Flood".
