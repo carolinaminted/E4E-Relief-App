@@ -5,6 +5,7 @@ import CountrySelector from './CountrySelector';
 import AddressHelper from './AddressHelper';
 import SearchableSelector from './SearchableSelector';
 import { employmentTypes, languages } from '../data/appData';
+import { formatPhoneNumber } from '../utils/formatting';
 
 interface ProfilePageProps {
   navigate: (page: 'home' | 'apply') => void;
@@ -81,7 +82,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [errors, setErrors] = useState<Record<string, any>>({});
   const [openSections, setOpenSections] = useState({
-    contact: true, // Expanded by default
+    contact: false,
     primaryAddress: false,
     additionalDetails: false,
     mailingAddress: false,
@@ -89,15 +90,32 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
   });
 
   const sectionHasErrors = useMemo(() => {
-    const errorKeys = Object.keys(errors);
+    // Contact
+    const contactHasBlanks = !formData.firstName || !formData.lastName || !formData.mobileNumber;
+    
+    // Primary Address
+    const primaryAddressHasBlanks = !formData.primaryAddress.country || !formData.primaryAddress.street1 || !formData.primaryAddress.city || !formData.primaryAddress.state || !formData.primaryAddress.zip;
+    
+    // Additional Details
+    const additionalDetailsHasBlanks = !formData.employmentStartDate || !formData.eligibilityType || formData.householdIncome === '' || formData.householdSize === '' || !formData.homeowner;
+    
+    // Mailing Address
+    let mailingAddressHasBlanks = false;
+    if (!formData.isMailingAddressSame) {
+        mailingAddressHasBlanks = !formData.mailingAddress?.country || !formData.mailingAddress?.street1 || !formData.mailingAddress?.city || !formData.mailingAddress?.state || !formData.mailingAddress?.zip;
+    }
+
+    // Consent
+    const consentHasBlanks = !formData.ackPolicies || !formData.commConsent || !formData.infoCorrect;
+
     return {
-        contact: errorKeys.some(k => ['firstName', 'lastName', 'mobileNumber'].includes(k)),
-        primaryAddress: errorKeys.some(k => k.startsWith('primaryAddress')),
-        additionalDetails: errorKeys.some(k => ['employmentStartDate', 'eligibilityType', 'householdIncome', 'householdSize', 'homeowner'].includes(k)),
-        mailingAddress: errorKeys.some(k => k.startsWith('mailingAddress')),
-        consent: errorKeys.some(k => ['ackPolicies', 'commConsent', 'infoCorrect'].includes(k)),
+        contact: contactHasBlanks,
+        primaryAddress: primaryAddressHasBlanks,
+        additionalDetails: additionalDetailsHasBlanks,
+        mailingAddress: mailingAddressHasBlanks,
+        consent: consentHasBlanks,
     };
-  }, [errors]);
+  }, [formData]);
 
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -105,7 +123,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
 
 
   const handleFormChange = (field: keyof UserProfile, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let finalValue = value;
+    if (field === 'mobileNumber') {
+      finalValue = formatPhoneNumber(value);
+    }
+    setFormData(prev => ({ ...prev, [field]: finalValue }));
+
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -161,7 +184,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
     // Contact Info
     if (!formData.firstName) newErrors.firstName = 'First name is required.';
     if (!formData.lastName) newErrors.lastName = 'Last name is required.';
-    if (!formData.mobileNumber) newErrors.mobileNumber = 'Mobile number is required.';
+    if (!formData.mobileNumber) {
+        newErrors.mobileNumber = 'Mobile number is required.';
+    } else {
+        const digitCount = formData.mobileNumber.replace(/[^\d]/g, '').length;
+        if (digitCount < 7) {
+            newErrors.mobileNumber = 'Please enter a valid phone number (at least 7 digits).';
+        }
+    }
 
     // Primary Address
     const primaryAddrErrors: Record<string, string> = {};
@@ -265,7 +295,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                     <FormInput label="Last Name" id="lastName" required value={formData.lastName} onChange={e => handleFormChange('lastName', e.target.value)} error={errors.lastName} />
                     <FormInput label="Suffix" id="suffix" value={formData.suffix || ''} onChange={e => handleFormChange('suffix', e.target.value)} />
                     <FormInput label="Email" id="email" required value={formData.email} disabled />
-                    <FormInput label="Mobile Number" id="mobileNumber" required value={formData.mobileNumber} onChange={e => handleFormChange('mobileNumber', e.target.value)} error={errors.mobileNumber} />
+                    <FormInput label="Mobile Number" id="mobileNumber" required value={formData.mobileNumber} onChange={e => handleFormChange('mobileNumber', e.target.value)} error={errors.mobileNumber} placeholder="(555) 555-5555" />
                 </div>
             </div>
         </fieldset>

@@ -4,6 +4,7 @@ import CountrySelector from './CountrySelector';
 import AddressHelper from './AddressHelper';
 import SearchableSelector from './SearchableSelector';
 import { employmentTypes, languages } from '../data/appData';
+import { formatPhoneNumber } from '../utils/formatting';
 
 interface ApplyContactPageProps {
   formData: UserProfile;
@@ -59,7 +60,12 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
   const [errors, setErrors] = useState<Record<string, any>>({});
   
   const handleFormUpdate = (data: Partial<UserProfile>) => {
-    updateFormData(data);
+    let finalData = { ...data };
+    if ('mobileNumber' in data && typeof data.mobileNumber === 'string') {
+        finalData.mobileNumber = formatPhoneNumber(data.mobileNumber);
+    }
+    updateFormData(finalData);
+    
     const fieldName = Object.keys(data)[0];
     if (errors[fieldName]) {
         setErrors(prev => {
@@ -106,7 +112,14 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
     // Contact Info
     if (!formData.firstName) newErrors.firstName = 'First name is required.';
     if (!formData.lastName) newErrors.lastName = 'Last name is required.';
-    if (!formData.mobileNumber) newErrors.mobileNumber = 'Mobile number is required.';
+    if (!formData.mobileNumber) {
+        newErrors.mobileNumber = 'Mobile number is required.';
+    } else {
+        const digitCount = formData.mobileNumber.replace(/[^\d]/g, '').length;
+        if (digitCount < 7) {
+            newErrors.mobileNumber = 'Please enter a valid phone number (at least 7 digits).';
+        }
+    }
 
     // Primary Address
     const primaryAddrErrors: Record<string, string> = {};
@@ -164,7 +177,7 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
             <FormInput label="Last Name" id="lastName" required value={formData.lastName} onChange={e => handleFormUpdate({ lastName: e.target.value })} error={errors.lastName} />
             <FormInput label="Suffix" id="suffix" value={formData.suffix || ''} onChange={e => handleFormUpdate({ suffix: e.target.value })} />
             <FormInput label="Email" id="email" required value={formData.email} disabled />
-            <FormInput label="Mobile Number" id="mobileNumber" required value={formData.mobileNumber} onChange={e => handleFormUpdate({ mobileNumber: e.target.value })} error={errors.mobileNumber} />
+            <FormInput label="Mobile Number" id="mobileNumber" required value={formData.mobileNumber} onChange={e => handleFormUpdate({ mobileNumber: e.target.value })} error={errors.mobileNumber} placeholder="(555) 555-5555" />
           </div>
         </section>
 
