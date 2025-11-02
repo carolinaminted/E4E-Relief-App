@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import type { ApplicationFormData } from './ApplyPage';
 
 interface ApplyEventPageProps {
-  formData: Partial<ApplicationFormData>;
-  updateFormData: (data: Partial<ApplicationFormData>) => void;
+  formData: ApplicationFormData['eventData'];
+  updateFormData: (data: Partial<ApplicationFormData['eventData']>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -12,7 +12,7 @@ const ApplyEventPage: React.FC<ApplyEventPageProps> = ({ formData, updateFormDat
   const [error, setError] = useState('');
   
   const handleNext = () => {
-    if (!formData.hireDate || !formData.event || !formData.requestedAmount || formData.requestedAmount <= 0) {
+    if (!formData.event || !formData.requestedAmount || formData.requestedAmount <= 0) {
       setError('All fields are required and the requested amount must be greater than zero.');
       return;
     }
@@ -23,17 +23,6 @@ const ApplyEventPage: React.FC<ApplyEventPageProps> = ({ formData, updateFormDat
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-white">Step 2: Event Details</h2>
-      <div>
-          <label htmlFor="hireDate" className="block text-sm font-medium text-white mb-2">Hire Date</label>
-          <input
-            type="date"
-            id="hireDate"
-            value={formData.hireDate || ''}
-            onChange={(e) => updateFormData({ hireDate: e.target.value })}
-            className="w-full bg-[#005ca0] border border-[#005ca0] rounded-md p-2 text-white focus:ring-[#ff8400] focus:border-[#ff8400]"
-            required
-          />
-        </div>
         <div>
           <label htmlFor="event" className="block text-sm font-medium text-white mb-2">Event</label>
           <select

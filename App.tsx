@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import type { UserProfile, Application } from './types';
 import { evaluateApplicationEligibility } from './services/geminiService';
+import type { ApplicationFormData } from './components/ApplyPage';
 
 // Page Components
 import LoginPage from './components/LoginPage';
@@ -17,9 +18,33 @@ type Page = 'login' | 'register' | 'home' | 'apply' | 'profile' | 'support' | 's
 // --- MOCK DATABASE ---
 const initialUsers: Record<string, UserProfile & { passwordHash: string }> = {
   'user@example.com': {
+    // 1a
     firstName: 'John',
     lastName: 'Doe',
     email: 'user@example.com',
+    mobileNumber: '555-123-4567',
+    // 1b
+    primaryAddress: {
+      country: 'United States',
+      street1: '123 Main St',
+      city: 'Anytown',
+      state: 'CA',
+      zip: '12345',
+    },
+    // 1c
+    employmentStartDate: '2020-05-15',
+    eligibilityType: 'Full-time',
+    householdIncome: 75000,
+    householdSize: 4,
+    homeowner: 'Yes',
+    preferredLanguage: 'English',
+    // 1d
+    isMailingAddressSame: true,
+    // 1e
+    ackPolicies: true,
+    commConsent: true,
+    infoCorrect: true,
+    // Auth
     passwordHash: 'password123', // In a real app, this would be a hash
   },
 };
@@ -28,10 +53,7 @@ const initialApplications: Record<string, Application[]> = {
   'user@example.com': [
     {
       id: 'APP-1001',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'user@example.com',
-      hireDate: '2020-05-15',
+      profileSnapshot: initialUsers['user@example.com'], // Snapshot of the user profile
       event: 'Flood',
       requestedAmount: 2500,
       submittedDate: '2023-08-12',
@@ -41,6 +63,29 @@ const initialApplications: Record<string, Application[]> = {
     },
   ],
 };
+
+const createNewUserProfile = (
+    firstName: string,
+    lastName: string,
+    email: string
+): UserProfile => ({
+    firstName,
+    lastName,
+    email,
+    mobileNumber: '',
+    primaryAddress: { country: '', street1: '', city: '', state: '', zip: '' },
+    employmentStartDate: '',
+    eligibilityType: '',
+    householdIncome: '',
+    householdSize: '',
+    homeowner: '',
+    isMailingAddressSame: true,
+    ackPolicies: false,
+    commConsent: false,
+    infoCorrect: false,
+});
+
+
 // --- END MOCK DATABASE ---
 
 function App() {
@@ -60,11 +105,8 @@ function App() {
   const handleLogin = useCallback((email: string, password: string): boolean => {
     const user = users[email];
     if (user && user.passwordHash === password) {
-      setCurrentUser({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      });
+      const { passwordHash, ...profile } = user;
+      setCurrentUser(profile);
       setPage('home');
       return true;
     }
@@ -75,15 +117,14 @@ function App() {
     if (users[email]) {
       return false; // User already exists
     }
+    const newUserProfile = createNewUserProfile(firstName, lastName, email);
     const newUser = {
-      firstName,
-      lastName,
-      email,
+      ...newUserProfile,
       passwordHash: password,
     };
     setUsers(prev => ({ ...prev, [email]: newUser }));
     setApplications(prev => ({ ...prev, [email]: [] }));
-    setCurrentUser({ firstName, lastName, email });
+    setCurrentUser(newUserProfile);
     setPage('home');
     return true;
   }, [users]);
@@ -107,9 +148,8 @@ function App() {
             return {
                 ...prev,
                 [currentUser.email]: {
-                    ...currentUserData,
-                    firstName: updatedProfile.firstName,
-                    lastName: updatedProfile.lastName,
+                    ...currentUserData, // a.k.a. passwordHash
+                    ...updatedProfile,
                 }
             };
         }
@@ -118,20 +158,28 @@ function App() {
     // Maybe show a success message
   }, [currentUser]);
 
-  const handleApplicationSubmit = useCallback(async (newApplicationData: Omit<Application, 'id' | 'submittedDate' | 'status'>) => {
+  const handleApplicationSubmit = useCallback(async (appFormData: ApplicationFormData) => {
     if (!currentUser) return;
     
     const tempId = `APP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-    const appForEvaluation = { ...newApplicationData, id: tempId };
 
     // Call the AI service to get the status
-    const decision = await evaluateApplicationEligibility(appForEvaluation);
+    const decision = await evaluateApplicationEligibility({
+        id: tempId,
+        employmentStartDate: appFormData.profileData.employmentStartDate,
+        event: appFormData.eventData.event,
+        requestedAmount: appFormData.eventData.requestedAmount,
+    });
 
     const newApplication: Application = {
-      ...newApplicationData,
       id: tempId,
+      profileSnapshot: appFormData.profileData,
+      event: appFormData.eventData.event,
+      requestedAmount: appFormData.eventData.requestedAmount,
       submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
       status: decision,
+      shareStory: appFormData.agreementData.shareStory,
+      receiveAdditionalInfo: appFormData.agreementData.receiveAdditionalInfo,
     };
 
     setApplications(prev => ({
@@ -139,13 +187,9 @@ function App() {
       [currentUser.email]: [...(prev[currentUser.email] || []), newApplication],
     }));
     
-    // If the user updated their name in the application, update their profile too
-    if (newApplicationData.firstName !== currentUser.firstName || newApplicationData.lastName !== currentUser.lastName) {
-        handleProfileUpdate({
-            firstName: newApplicationData.firstName,
-            lastName: newApplicationData.lastName,
-            email: currentUser.email,
-        });
+    // If the user updated their profile in the application, update their main profile too
+    if (JSON.stringify(appFormData.profileData) !== JSON.stringify(currentUser)) {
+        handleProfileUpdate(appFormData.profileData);
     }
 
     setLastSubmittedApp(newApplication);

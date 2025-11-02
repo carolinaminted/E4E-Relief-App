@@ -75,7 +75,14 @@ The user currently has no submitted applications. If they ask about their applic
   });
 }
 
-export async function evaluateApplicationEligibility(appData: Omit<Application, 'status' | 'submittedDate'>): Promise<'Awarded' | 'Declined'> {
+export async function evaluateApplicationEligibility(
+  appData: { 
+    id: string; 
+    employmentStartDate: string; 
+    event: string; 
+    requestedAmount: number; 
+  }
+): Promise<'Awarded' | 'Declined'> {
   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
   const prompt = `
@@ -83,12 +90,12 @@ export async function evaluateApplicationEligibility(appData: Omit<Application, 
 
     **Eligibility Rules:**
     1. Event: Must be exactly "Tornado" or "Flood".
-    2. Hire Date: Must be a date on or before today's date (${today}).
+    2. Employment Start Date: Must be a date on or before today's date (${today}).
     3. Requested Amount: Must be less than or equal to 10000.
 
     **Applicant Details:**
     - Application ID: ${appData.id}
-    - Hire Date: ${appData.hireDate}
+    - Employment Start Date: ${appData.employmentStartDate}
     - Event: ${appData.event}
     - Requested Amount: ${appData.requestedAmount}
 

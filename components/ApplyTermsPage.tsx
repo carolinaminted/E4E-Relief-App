@@ -3,8 +3,8 @@ import TermsModal from './TermsModal';
 import type { ApplicationFormData } from './ApplyPage';
 
 interface ApplyTermsPageProps {
-  formData: Partial<ApplicationFormData>;
-  updateFormData: (data: Partial<ApplicationFormData>) => void;
+  formData: ApplicationFormData['agreementData'];
+  updateFormData: (data: Partial<ApplicationFormData['agreementData']>) => void;
   prevStep: () => void;
   onSubmit: () => Promise<void>;
 }

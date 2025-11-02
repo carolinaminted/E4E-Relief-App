@@ -52,8 +52,8 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({ applica
             <span>{application.submittedDate}</span>
           </div>
           <div className="flex justify-between border-b border-[#002a50] pb-2">
-            <span className="font-semibold text-white opacity-70">Hire Date:</span>
-            <span>{application.hireDate}</span>
+            <span className="font-semibold text-white opacity-70">Employment Start Date:</span>
+            <span>{application.profileSnapshot.employmentStartDate}</span>
           </div>
           <div className="flex justify-between border-b border-[#002a50] pb-2">
             <span className="font-semibold text-white opacity-70">Event Type:</span>
