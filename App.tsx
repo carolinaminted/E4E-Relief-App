@@ -140,12 +140,27 @@ function App() {
   
   const renderPage = () => {
     if (!currentUser) {
-      switch (page) {
-        case 'register':
-          return <RegisterPage onRegister={handleRegister} switchToLogin={() => setPage('login')} />;
-        default:
-          return <LoginPage onLogin={handleLogin} switchToRegister={() => setPage('register')} />;
-      }
+      return (
+        <>
+          {/* Logo container with a fixed proportion of the viewport height */}
+          <div className="w-full flex justify-center items-center h-[35vh]">
+            <img 
+              src="https://gateway.pinata.cloud/ipfs/bafybeihjhfybcxtlj6r4u7c6jdgte7ehcrctaispvtsndkvgc3bmevuvqi" 
+              alt="E4E Relief Logo" 
+              className="mx-auto h-48 w-auto"
+            />
+          </div>
+          
+          {/* Form container */}
+          <div className="w-full max-w-md">
+            {page === 'register' ? (
+              <RegisterPage onRegister={handleRegister} switchToLogin={() => setPage('login')} />
+            ) : (
+              <LoginPage onLogin={handleLogin} switchToRegister={() => setPage('register')} />
+            )}
+          </div>
+        </>
+      );
     }
     
     switch (page) {
@@ -185,7 +200,7 @@ function App() {
         </header>
       )}
 
-      <main className={`flex-1 flex flex-col ${!currentUser ? 'items-center justify-center' : ''}`}>
+      <main className={`flex-1 flex flex-col ${!currentUser ? 'items-center' : ''}`}>
         {renderPage()}
       </main>
 
