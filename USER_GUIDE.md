@@ -5,12 +5,7 @@
 - Choose **Register** to create an account or **Sign in** if you already have one.
 - After signing in, the **Home** screen shows tiles for the main actions.
 
-Login Page:
-
 <img width="334" height="602" alt="image" src="https://github.com/user-attachments/assets/61007eb0-e080-421d-865e-32cd926a243f" />
-
-Registration Page:
-
 <img width="334" height="604" alt="image" src="https://github.com/user-attachments/assets/639aab15-e872-4842-9a89-0528af5150a6" />
 
 
