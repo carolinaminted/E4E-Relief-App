@@ -1,5 +1,5 @@
 import { GoogleGenAI, Chat, FunctionDeclaration, Type } from "@google/genai";
-import type { Application } from '../types';
+import type { Application, Address } from '../types';
 
 const API_KEY = process.env.API_KEY;
 
@@ -153,5 +153,58 @@ export async function evaluateApplicationEligibility(
     console.error("AI eligibility check failed:", error);
     // Default to a safe status in case of API error
     return 'Declined';
+  }
+}
+
+const addressJsonSchema = {
+    type: Type.OBJECT,
+    properties: {
+        street1: { type: Type.STRING, description: "The primary street line, including street number and name." },
+        street2: { type: Type.STRING, description: "The secondary street line (e.g., apartment, suite, or unit number)." },
+        city: { type: Type.STRING, description: "The city." },
+        state: { type: Type.STRING, description: "The state, province, or region, preferably as a 2-letter abbreviation if applicable (e.g., CA for California)." },
+        zip: { type: Type.STRING, description: "The ZIP or postal code." },
+        country: { type: Type.STRING, description: "The country." },
+    },
+    required: ["street1", "city", "state", "zip", "country"]
+};
+
+export async function parseAddressWithGemini(addressString: string): Promise<Partial<Address>> {
+  if (!addressString) return {};
+
+  const prompt = `
+    Parse the following address string into a structured JSON object.
+    - If a component isn't present, omit it from the JSON.
+    - For the 'state', use the 2-letter abbreviation if it's a US address.
+    
+    Address to parse: "${addressString}"
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: addressJsonSchema,
+      },
+    });
+
+    const jsonString = response.text.trim();
+    if (jsonString) {
+      const parsed = JSON.parse(jsonString);
+      // The user might have just typed a city and state, so we might get back country=null
+      // Filter out null values before returning
+      Object.keys(parsed).forEach(key => {
+        if (parsed[key] === null) {
+          delete parsed[key];
+        }
+      });
+      return parsed as Partial<Address>;
+    }
+    return {};
+  } catch (error) {
+    console.error("Gemini address parsing failed:", error);
+    throw new Error("Failed to parse address with AI.");
   }
 }

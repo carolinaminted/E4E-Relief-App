@@ -112,7 +112,7 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile, 
     <div className="p-8 max-w-4xl mx-auto w-full">
       <button onClick={() => navigate('home')} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 mb-6">&larr; Back to Home</button>
       <h1 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] text-center">Apply for Relief</h1>
-      <div className="bg-[#004b8d] p-8 rounded-lg shadow-lg">
+      <div>
         {renderStep()}
       </div>
     </div>

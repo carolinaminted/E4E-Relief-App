@@ -36,7 +36,7 @@ export interface UserProfile {
   householdIncome: number | '';
   householdSize: number | '';
   homeowner: 'Yes' | 'No' | '';
-  preferredLanguage?: 'English' | 'Spanish';
+  preferredLanguage?: string;
 
   // 1d Mailing Address
   isMailingAddressSame: boolean;
