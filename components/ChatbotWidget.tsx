@@ -7,19 +7,18 @@ import ChatInput from './ChatInput';
 
 interface ChatbotWidgetProps {
   applications: Application[];
+  onChatbotAction: (functionName: string, args: any) => void;
 }
 
-const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications }) => {
+const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications, onChatbotAction }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: MessageRole.MODEL, content: "Hello! I'm the Relief Assistant. How can I help you today?" }
+    { role: MessageRole.MODEL, content: "Hello! I'm the Relief Assistant. How can I help you today? Feel free to tell me about your situation." }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const chatSessionRef = useRef<Chat | null>(null);
 
   useEffect(() => {
-    // Re-create the session if the panel is open and applications data changes.
-    // This ensures the AI has the latest context.
     if (isOpen) {
         chatSessionRef.current = createChatSession(applications);
     }
@@ -30,28 +29,69 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications }) => {
 
     setIsLoading(true);
     const userMessage: ChatMessage = { role: MessageRole.USER, content: userInput };
-    setMessages(prevMessages => [...prevMessages, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
 
     if (!chatSessionRef.current) {
-        // This should not happen if panel is open due to useEffect, but as a fallback
         chatSessionRef.current = createChatSession(applications);
     }
 
     try {
       const stream = await chatSessionRef.current.sendMessageStream({ message: userInput });
       
-      let modelResponse = '';
-      setMessages(prev => [...prev, { role: MessageRole.MODEL, content: '' }]);
+      let modelResponseText = '';
+      let functionCalls: any[] = [];
+      let modelResponseHasStarted = false;
 
       for await (const chunk of stream) {
-        modelResponse += chunk.text;
-        setMessages(prev => {
-          const newMessages = [...prev];
-          if(newMessages.length > 0 && newMessages[newMessages.length - 1].role === MessageRole.MODEL) {
-             newMessages[newMessages.length - 1].content = modelResponse;
+        if (chunk.text) {
+          modelResponseText += chunk.text;
+          if (!modelResponseHasStarted) {
+            setMessages(prev => [...prev, { role: MessageRole.MODEL, content: '' }]);
+            modelResponseHasStarted = true;
           }
-          return newMessages;
-        });
+          setMessages(prev => {
+            const newMessages = [...prev];
+            if(newMessages.length > 0) {
+               newMessages[newMessages.length - 1].content = modelResponseText;
+            }
+            return newMessages;
+          });
+        }
+        
+        if(chunk.functionCalls) {
+            functionCalls.push(...chunk.functionCalls);
+        }
+      }
+
+      if (functionCalls.length > 0) {
+         if (!modelResponseHasStarted) {
+            setMessages(prev => [...prev, { role: MessageRole.MODEL, content: '' }]);
+          }
+
+        const toolResponses = [];
+        for(const call of functionCalls) {
+            onChatbotAction(call.name, call.args);
+            toolResponses.push({ 
+                id: call.id, 
+                name: call.name, 
+                response: { result: 'ok' } 
+            });
+        }
+
+        const toolResponseStream = await chatSessionRef.current.sendMessageStream({ toolResponses });
+
+        for await (const chunk of toolResponseStream) {
+            if (chunk.text) {
+                modelResponseText += chunk.text;
+                setMessages(prev => {
+                    const newMessages = [...prev];
+                    if(newMessages.length > 0) {
+                        newMessages[newMessages.length - 1].content = modelResponseText;
+                    }
+                    return newMessages;
+                });
+            }
+        }
       }
 
     } catch (error) {
@@ -64,7 +104,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, applications]);
+  }, [isLoading, applications, onChatbotAction]);
 
   const toggleChat = () => setIsOpen(!isOpen);
   

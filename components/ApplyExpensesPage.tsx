@@ -8,7 +8,7 @@ interface ApplyExpensesPageProps {
 const ApplyExpensesPage: React.FC<ApplyExpensesPageProps> = ({ nextStep, prevStep }) => {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-white">Step 3: Expenses</h2>
+      <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Expenses</h2>
       <p className="text-gray-300">Based on your event details, here are the eligible expenses. (This section will be dynamic in a future update).</p>
       
       <div className="overflow-x-auto">

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import type { ApplicationFormData } from './ApplyPage';
+import SearchableSelector from './SearchableSelector';
+import { eventTypes } from '../data/appData';
 
 interface ApplyEventPageProps {
   formData: ApplicationFormData['eventData'];
@@ -9,51 +11,64 @@ interface ApplyEventPageProps {
 }
 
 const ApplyEventPage: React.FC<ApplyEventPageProps> = ({ formData, updateFormData, nextStep, prevStep }) => {
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   const handleNext = () => {
-    if (!formData.event || !formData.requestedAmount || formData.requestedAmount <= 0) {
-      setError('All fields are required and the requested amount must be greater than zero.');
-      return;
+    const newErrors: Record<string, string> = {};
+    if (!formData.event) {
+      newErrors.event = 'Please select an event type.';
     }
-    setError('');
-    nextStep();
+    if (!formData.requestedAmount || formData.requestedAmount <= 0) {
+      newErrors.requestedAmount = 'Requested amount must be greater than zero.';
+    }
+
+    setErrors(newErrors);
+    
+    if (Object.keys(newErrors).length === 0) {
+      nextStep();
+    }
+  };
+  
+  const handleUpdate = (data: Partial<ApplicationFormData['eventData']>) => {
+    updateFormData(data);
+    const fieldName = Object.keys(data)[0];
+    if (errors[fieldName]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-white">Step 2: Event Details</h2>
-        <div>
-          <label htmlFor="event" className="block text-sm font-medium text-white mb-2">Event</label>
-          <select
+    <div className="space-y-6 p-8">
+      <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Event Details</h2>
+        <SearchableSelector
+            label="Event"
             id="event"
-            value={formData.event || ''}
-            onChange={(e) => updateFormData({ event: e.target.value })}
-            className="w-full bg-[#005ca0] border border-[#005ca0] rounded-md p-2 text-white focus:ring-[#ff8400] focus:border-[#ff8400]"
             required
-          >
-            <option value="" disabled>Select an event type</option>
-            <option value="Flood">Flood</option>
-            <option value="Tornado">Tornado</option>
-            <option value="Tropical Storm/Hurricane">Tropical Storm/Hurricane</option>
-            <option value="Wildfire">Wildfire</option>
-          </select>
-        </div>
+            value={formData.event || ''}
+            options={eventTypes}
+            onUpdate={value => handleUpdate({ event: value })}
+            variant="underline"
+            error={errors.event}
+        />
         <div>
           <label htmlFor="amount" className="block text-sm font-medium text-white mb-2">Requested Relief Payment ($)</label>
           <input
             type="number"
             id="amount"
             value={formData.requestedAmount || ''}
-            onChange={(e) => updateFormData({ requestedAmount: parseFloat(e.target.value) || 0 })}
+            onChange={(e) => handleUpdate({ requestedAmount: parseFloat(e.target.value) || 0 })}
             placeholder="0.00"
-            className="w-full bg-[#005ca0] border border-[#005ca0] rounded-md p-2 text-white focus:ring-[#ff8400] focus:border-[#ff8400]"
+            className={`w-full bg-transparent border-0 border-b p-2 text-white focus:outline-none focus:ring-0 ${errors.requestedAmount ? 'border-red-500' : 'border-[#005ca0] focus:border-[#ff8400]'}`}
             min="0.01"
             step="0.01"
             required
           />
+          {errors.requestedAmount && <p className="text-red-400 text-xs mt-1">{errors.requestedAmount}</p>}
         </div>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
       <div className="flex justify-between pt-4">
         <button onClick={prevStep} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-md transition-colors duration-200">
           Back

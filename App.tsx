@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo } from 'react';
 import type { UserProfile, Application } from './types';
 import { evaluateApplicationEligibility } from './services/geminiService';
@@ -94,6 +95,8 @@ function App() {
   const [users, setUsers] = useState(initialUsers);
   const [applications, setApplications] = useState(initialApplications);
   const [lastSubmittedApp, setLastSubmittedApp] = useState<Application | null>(null);
+  const [applicationDraft, setApplicationDraft] = useState<Partial<ApplicationFormData> | null>(null);
+
 
   const userApplications = useMemo(() => {
     if (currentUser) {
@@ -191,11 +194,39 @@ function App() {
     if (JSON.stringify(appFormData.profileData) !== JSON.stringify(currentUser)) {
         handleProfileUpdate(appFormData.profileData);
     }
-
+    
+    setApplicationDraft(null); // Clear the draft after submission
     setLastSubmittedApp(newApplication);
     setPage('submissionSuccess');
 
   }, [currentUser, handleProfileUpdate]);
+  
+  const handleChatbotAction = useCallback((functionName: string, args: any) => {
+    console.log(`Executing tool: ${functionName}`, args);
+    setApplicationDraft(prevDraft => {
+        const newDraft = { ...prevDraft };
+
+        if (functionName === 'updateUserProfile') {
+            // FIX: Cast prevProfile to Partial<UserProfile> to allow safe access to nested properties like primaryAddress
+            const prevProfile: Partial<UserProfile> = prevDraft?.profileData || {};
+            const newProfile = { ...prevProfile, ...args };
+
+            // Deep merge for nested address object
+            if (args.primaryAddress) {
+                newProfile.primaryAddress = {
+                    ...(prevProfile.primaryAddress || {}),
+                    ...args.primaryAddress
+                };
+            }
+            newDraft.profileData = newProfile as UserProfile;
+        }
+
+        if (functionName === 'startOrUpdateApplicationDraft') {
+            newDraft.eventData = { ...(prevDraft?.eventData || {}), ...args };
+        }
+        return newDraft;
+    });
+  }, []);
 
   const renderPage = () => {
     if (!currentUser) {
@@ -224,7 +255,7 @@ function App() {
     
     switch (page) {
       case 'apply':
-        return <ApplyPage navigate={navigate} onSubmit={handleApplicationSubmit} userProfile={currentUser} />;
+        return <ApplyPage navigate={navigate} onSubmit={handleApplicationSubmit} userProfile={currentUser} applicationDraft={applicationDraft} />;
       case 'profile':
         return <ProfilePage navigate={navigate} applications={userApplications} userProfile={currentUser} onProfileUpdate={handleProfileUpdate} />;
       case 'support':
@@ -262,7 +293,7 @@ function App() {
         {renderPage()}
       </main>
 
-      {currentUser && <ChatbotWidget applications={userApplications} />}
+      {currentUser && <ChatbotWidget applications={userApplications} onChatbotAction={handleChatbotAction} />}
     </div>
   );
 }
