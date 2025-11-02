@@ -1,4 +1,3 @@
-
 import React, { useState, KeyboardEvent } from 'react';
 
 interface ChatInputProps {
@@ -36,7 +35,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }) => {
   };
 
   return (
-    <div className="flex items-center space-x-2 bg-slate-700 rounded-lg p-2">
+    <div className="flex items-center space-x-2 bg-[#005ca0] rounded-lg p-2">
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
@@ -44,12 +43,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }) => {
         placeholder="Type your message..."
         rows={1}
         disabled={isLoading}
-        className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none resize-none px-2 py-1"
+        className="flex-1 bg-transparent text-white placeholder-gray-300 focus:outline-none resize-none px-2 py-1"
       />
       <button
         onClick={handleSubmit}
         disabled={isLoading || !input.trim()}
-        className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold p-2 rounded-md transition-colors duration-200"
+        className="bg-[#ff8400] hover:bg-[#e67700] disabled:bg-[#898c8d] disabled:cursor-not-allowed text-white font-bold p-2 rounded-md transition-colors duration-200"
       >
         <SendIcon disabled={isLoading || !input.trim()} />
       </button>

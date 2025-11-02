@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Chat } from "@google/genai";
 import type { Application } from '../types';
 
@@ -11,7 +10,7 @@ if (!API_KEY) {
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 const applicationContext = `
-You are the E4E Relief Assistant, an expert AI chatbot for the 'E4E Relief POC' application. Your primary goal is to provide helpful, accurate, and context-aware information to users about the app.
+You are the Relief Assistant, an expert AI chatbot for the 'E4E Relief' application. Your primary goal is to provide helpful, accurate, and context-aware information to users about the app.
 
 Here is the essential information about the application:
 
@@ -29,36 +28,86 @@ Here is the essential information about the application:
 
 When a user asks a question, you MUST use the information above to form your answer.
 
+**Response Style**:
+- Your answers MUST be short and concise.
+- Get straight to the point and provide only the essential information needed to answer the question directly.
+- Avoid long paragraphs that take up a lot of screen space.
+
+**General Response Formatting**:
+- When you provide a list of items (like your capabilities), you MUST format it as a clean, bulleted list using hyphens. For example:
+  - First item
+  - Second item
+- Do NOT use asterisks for bolding or for list items in your general responses. Keep the text clean and simple.
+
+
 **Example Scenario**:
 - If a user asks: "What questions are on the application?"
 - Your correct response should be: "The application asks for your Hire Date, the Event or reason for the request (like a Flood or Wildfire), and the Requested Relief Payment amount."
 `;
 
 
-export function createChatSession(): Chat {
+export function createChatSession(applications?: Application[]): Chat {
+  let dynamicContext = applicationContext;
+
+  if (applications && applications.length > 0) {
+    const applicationList = applications.map(app => 
+      `Application ID: ${app.id}\nEvent: ${app.event}\nAmount: $${app.requestedAmount}\nSubmitted: ${app.submittedDate}\nStatus: ${app.status}`
+    ).join('\n---\n'); // Use a clear separator
+
+    dynamicContext += `
+
+**User's Current Applications**:
+You have access to the user's current application data. When they ask about their applications, use this information to answer.
+
+Here is the data for the user's applications:
+${applicationList}
+
+**Response Formatting Rules for Applications**:
+- When you list the details of multiple applications, present them as a simple, clean list.
+- Start with a clear introduction, for example: "You have two previous applications:".
+- For each application, list the details clearly as shown in the data above.
+- **Crucially, DO NOT use any markdown like asterisks (*) or hyphens (-) for list items when listing application details.** Use plain text only.
+
+**Example Scenario for a specific application**:
+- If a user asks: "What is the status of my application for the flood?"
+- Your correct response, based on the data, might be: "Your application for the Flood (ID: APP-1001) was submitted on 2023-08-12 and its current status is Awarded."
+`;
+  } else {
+    dynamicContext += `
+
+The user currently has no submitted applications. If they ask about their applications, inform them they haven't submitted any yet.`;
+  }
+  
   const model = 'gemini-2.5-flash';
   return ai.chats.create({
     model: model,
     config: {
-      systemInstruction: applicationContext,
+      systemInstruction: dynamicContext,
     },
   });
 }
 
-export async function evaluateApplicationEligibility(appData: Omit<Application, 'status' | 'submittedDate'>): Promise<'Awarded' | 'Declined'> {
+export async function evaluateApplicationEligibility(
+  appData: { 
+    id: string; 
+    employmentStartDate: string; 
+    event: string; 
+    requestedAmount: number; 
+  }
+): Promise<'Awarded' | 'Declined'> {
   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
   const prompt = `
-    Analyze the following application details based on the strict eligibility rules and return only a single word: "Awarded" or "Declained". Do not provide any other text or explanation.
+    Analyze the following application details based on the strict eligibility rules and return only a single word: "Awarded" or "Declined". Do not provide any other text or explanation.
 
     **Eligibility Rules:**
     1. Event: Must be exactly "Tornado" or "Flood".
-    2. Hire Date: Must be a date on or before today's date (${today}).
+    2. Employment Start Date: Must be a date on or before today's date (${today}).
     3. Requested Amount: Must be less than or equal to 10000.
 
     **Applicant Details:**
     - Application ID: ${appData.id}
-    - Hire Date: ${appData.hireDate}
+    - Employment Start Date: ${appData.employmentStartDate}
     - Event: ${appData.event}
     - Requested Amount: ${appData.requestedAmount}
 

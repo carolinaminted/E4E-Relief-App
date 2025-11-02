@@ -1,0 +1,121 @@
+import React, { useState } from 'react';
+import TermsModal from './TermsModal';
+import type { ApplicationFormData } from './ApplyPage';
+
+interface ApplyTermsPageProps {
+  formData: ApplicationFormData['agreementData'];
+  updateFormData: (data: Partial<ApplicationFormData['agreementData']>) => void;
+  prevStep: () => void;
+  onSubmit: () => Promise<void>;
+}
+
+const ApplyTermsPage: React.FC<ApplyTermsPageProps> = ({ formData, updateFormData, prevStep, onSubmit }) => {
+  const [termsViewed, setTermsViewed] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+    setTermsViewed(true);
+  };
+  
+  const handleFinalSubmit = async () => {
+    if (!termsAgreed) {
+      setError('You must agree to the Terms of Acceptance to submit your application.');
+      return;
+    }
+    setError('');
+    setIsSubmitting(true);
+    await onSubmit();
+    // On success, the app will navigate away, so no need to reset loading state
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold text-white">Step 4: Agreements &amp; Submission</h2>
+      
+      {/* Share Your Story Section */}
+      <fieldset className="space-y-4 border border-[#005ca0] p-4 rounded-md">
+        <legend className="text-lg font-semibold text-[#ff8400] px-2">Share Your Story</legend>
+        <div>
+          <label className="block text-white mb-2">Would you be willing to share your story with your employer? <span className="text-red-400">*</span></label>
+          <p className="text-xs text-gray-400 mb-2 italic">*If yes, we will share your name and email address and your employer may contact you for additional information.</p>
+          <div className="flex gap-4">
+            <label className="flex items-center cursor-pointer">
+              <input type="radio" name="shareStory" checked={formData.shareStory === true} onChange={() => updateFormData({ shareStory: true })} className="form-radio h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 focus:ring-[#ff8400]" />
+              <span className="ml-2 text-white">Yes</span>
+            </label>
+            <label className="flex items-center cursor-pointer">
+              <input type="radio" name="shareStory" checked={formData.shareStory === false} onChange={() => updateFormData({ shareStory: false })} className="form-radio h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 focus:ring-[#ff8400]" />
+              <span className="ml-2 text-white">No</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label className="block text-white mb-2">Are you interested in receiving additional information on assistance beyond financial support?</label>
+          <div className="flex gap-4">
+            <label className="flex items-center cursor-pointer">
+              <input type="radio" name="receiveInfo" checked={formData.receiveAdditionalInfo === true} onChange={() => updateFormData({ receiveAdditionalInfo: true })} className="form-radio h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 focus:ring-[#ff8400]" />
+              <span className="ml-2 text-white">Yes</span>
+            </label>
+            <label className="flex items-center cursor-pointer">
+              <input type="radio" name="receiveInfo" checked={formData.receiveAdditionalInfo === false} onChange={() => updateFormData({ receiveAdditionalInfo: false })} className="form-radio h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 focus:ring-[#ff8400]" />
+              <span className="ml-2 text-white">No</span>
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      {/* Terms of Acceptance Section */}
+      <fieldset className="space-y-2 border border-[#005ca0] p-4 rounded-md">
+        <legend className="text-lg font-semibold text-[#ff8400] px-2">Terms of Acceptance</legend>
+        <div className="flex items-start">
+          <input 
+            id="terms" 
+            type="checkbox" 
+            checked={termsAgreed}
+            onChange={(e) => setTermsAgreed(e.target.checked)}
+            disabled={!termsViewed}
+            className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1 disabled:opacity-50 disabled:cursor-not-allowed" 
+          />
+          <label htmlFor="terms" className={`ml-3 text-sm text-white ${!termsViewed ? 'opacity-60': ''}`}>
+            I acknowledge and agree that checking this box serves as my electronic signature and confirms that I have read, understand, and agree to the{' '}
+            <button type="button" onClick={handleOpenModal} className="font-medium text-[#ff8400] hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#004b8d] focus:ring-[#ff8400] rounded">
+              Terms of Acceptance
+            </button>. <span className="text-red-400">*</span>
+          </label>
+        </div>
+        {!termsViewed && <p className="text-xs text-yellow-400 ml-7 italic">Please view the terms before agreeing.</p>}
+      </fieldset>
+      
+      {error && <p className="text-red-400 text-sm pt-2">{error}</p>}
+      
+      <div className="flex justify-between pt-4">
+        <button onClick={prevStep} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-md transition-colors duration-200">
+          Back
+        </button>
+        <button 
+          onClick={handleFinalSubmit}
+          disabled={!termsAgreed || isSubmitting}
+          className="w-40 bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-3 px-6 rounded-md transition-colors duration-200 flex justify-center items-center h-12 disabled:bg-[#898c8d] disabled:cursor-wait"
+        >
+          {isSubmitting ? (
+            <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse [animation-delay:-0.3s]"></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse [animation-delay:-0.15s]"></div>
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            </div>
+          ) : (
+            'Submit Application'
+          )}
+        </button>
+      </div>
+
+      {isModalOpen && <TermsModal onClose={() => setIsModalOpen(false)} />}
+    </div>
+  );
+};
+
+export default ApplyTermsPage;

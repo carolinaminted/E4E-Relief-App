@@ -1,23 +1,29 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import type { Chat } from '@google/genai';
-import { ChatMessage, MessageRole } from '../types';
+import { ChatMessage, MessageRole, Application } from '../types';
 import { createChatSession } from '../services/geminiService';
 import ChatWindow from './ChatWindow';
 import ChatInput from './ChatInput';
 
-const ChatbotWidget: React.FC = () => {
+interface ChatbotWidgetProps {
+  applications: Application[];
+}
+
+const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: MessageRole.MODEL, content: "Hello! I'm the E4E Assistant. How can I help you today?" }
+    { role: MessageRole.MODEL, content: "Hello! I'm the Relief Assistant. How can I help you today?" }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const chatSessionRef = useRef<Chat | null>(null);
 
   useEffect(() => {
-    if (isOpen && !chatSessionRef.current) {
-        chatSessionRef.current = createChatSession();
+    // Re-create the session if the panel is open and applications data changes.
+    // This ensures the AI has the latest context.
+    if (isOpen) {
+        chatSessionRef.current = createChatSession(applications);
     }
-  }, [isOpen]);
+  }, [isOpen, applications]);
 
   const handleSendMessage = useCallback(async (userInput: string) => {
     if (!userInput.trim() || isLoading) return;
@@ -28,7 +34,7 @@ const ChatbotWidget: React.FC = () => {
 
     if (!chatSessionRef.current) {
         // This should not happen if panel is open due to useEffect, but as a fallback
-        chatSessionRef.current = createChatSession();
+        chatSessionRef.current = createChatSession(applications);
     }
 
     try {
@@ -58,32 +64,32 @@ const ChatbotWidget: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, [isLoading, applications]);
 
   const toggleChat = () => setIsOpen(!isOpen);
   
   return (
     <>
       <div 
-        className={`fixed bottom-24 right-8 w-full max-w-sm h-[calc(100vh-8rem)] max-h-[600px] bg-slate-800 rounded-lg shadow-2xl flex flex-col z-50 border border-slate-700 transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+        className={`fixed bottom-24 w-full max-w-sm h-[calc(100vh-8rem)] max-h-[600px] bg-[#004b8d] rounded-lg shadow-2xl flex flex-col z-50 border border-[#002a50] transition-all duration-300 ease-in-out left-1/2 -translate-x-1/2 md:left-8 md:-translate-x-0 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
         aria-hidden={!isOpen}
       >
-       <header className="bg-slate-900/70 p-4 border-b border-slate-700 shadow-lg flex justify-between items-center rounded-t-lg flex-shrink-0">
-        <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300">
-          Ask E4E Assistant
+       <header className="bg-[#003a70]/70 p-4 border-b border-[#002a50] shadow-lg flex justify-between items-center rounded-t-lg flex-shrink-0">
+        <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
+          Ask Relief Assistant
         </h1>
       </header>
        <main className="flex-1 overflow-hidden flex flex-col">
         <ChatWindow messages={messages} isLoading={isLoading} />
       </main>
-      <footer className="p-4 bg-slate-900/50 border-t border-slate-700 rounded-b-lg flex-shrink-0">
+      <footer className="p-4 bg-[#003a70]/50 border-t border-[#002a50] rounded-b-lg flex-shrink-0">
         <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
       </footer>
     </div>
 
     <button
         onClick={toggleChat}
-        className="fixed bottom-8 right-8 bg-blue-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 z-50"
+        className="fixed bottom-8 left-8 bg-[#ff8400] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-[#e67700] transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#ff8400] focus:ring-opacity-50 z-50"
         aria-label={isOpen ? "Close Chat" : "Open Chat"}
       >
         {isOpen ? (

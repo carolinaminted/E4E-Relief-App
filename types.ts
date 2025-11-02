@@ -9,17 +9,57 @@ export interface ChatMessage {
   content: string;
 }
 
-export interface UserProfile {
-  firstName: string;
-  lastName: string;
-  email: string;
+export interface Address {
+  country: string;
+  street1: string;
+  street2?: string;
+  city: string;
+  state: string;
+  zip: string;
 }
+
+export interface UserProfile {
+  // 1a Contact Information
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  suffix?: string;
+  email: string; // Stays as the unique identifier
+  mobileNumber: string;
+
+  // 1b Primary Address
+  primaryAddress: Address;
+
+  // 1c Additional Details
+  employmentStartDate: string;
+  eligibilityType: 'Full-time' | 'Part-time' | 'Contractor' | '';
+  householdIncome: number | '';
+  householdSize: number | '';
+  homeowner: 'Yes' | 'No' | '';
+  preferredLanguage?: 'English' | 'Spanish';
+
+  // 1d Mailing Address
+  isMailingAddressSame: boolean;
+  mailingAddress?: Address;
+
+  // 1e Consent and Acknowledgement
+  ackPolicies: boolean;
+  commConsent: boolean;
+  infoCorrect: boolean;
+}
+
 
 export interface Application {
   id: string;
-  hireDate: string;
+  // User profile snapshot at time of submission
+  profileSnapshot: UserProfile;
+  // --- Event Details
   event: string;
   requestedAmount: number;
+  // --- Metadata
   submittedDate: string;
   status: 'Submitted' | 'Awarded' | 'Declined';
+  // --- Agreements from final page
+  shareStory: boolean;
+  receiveAdditionalInfo: boolean;
 }
