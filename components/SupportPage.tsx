@@ -6,10 +6,9 @@ interface SupportPageProps {
 
 const SupportPage: React.FC<SupportPageProps> = ({ navigate }) => {
   return (
-    <div className="p-8 max-w-2xl mx-auto text-center">
+    <div className="p-8 max-w-2xl mx-auto">
       <button onClick={() => navigate('home')} className="text-[#ff8400] hover:text-[#ff9d33] mb-6">&larr; Back to Home</button>
-      <h1 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Support</h1>
-      <div className="bg-[#004b8d] p-8 rounded-lg shadow-lg space-y-4 text-lg">
+      <div className="bg-[#004b8d] p-8 rounded-lg shadow-lg space-y-4 text-lg text-center">
         <div>
           <h2 className="text-xl font-semibold text-[#ff8400] mb-1">Support Email</h2>
           <a href="mailto:support@e4erelief.example" className="text-[#ff8400] hover:underline">support@e4erelief.example</a>

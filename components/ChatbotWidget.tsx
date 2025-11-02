@@ -12,7 +12,7 @@ interface ChatbotWidgetProps {
 const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: MessageRole.MODEL, content: "Hello! I'm the E4E Assistant. How can I help you today?" }
+    { role: MessageRole.MODEL, content: "Hello! I'm the Relief Assistant. How can I help you today?" }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const chatSessionRef = useRef<Chat | null>(null);
@@ -76,7 +76,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications }) => {
       >
        <header className="bg-[#003a70]/70 p-4 border-b border-[#002a50] shadow-lg flex justify-between items-center rounded-t-lg flex-shrink-0">
         <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
-          Ask E4E Assistant
+          Ask Relief Assistant
         </h1>
       </header>
        <main className="flex-1 overflow-hidden flex flex-col">

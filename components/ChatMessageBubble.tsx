@@ -12,11 +12,11 @@ const UserIcon: React.FC = () => (
 );
 
 const ModelIcon: React.FC = () => (
-  <div className="w-8 h-8 rounded-full bg-[#ff8400] flex items-center justify-center flex-shrink-0">
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-      <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-    </svg>
-  </div>
+  <img
+    src="https://gateway.pinata.cloud/ipfs/bafybeihjhfybcxtlj6r4u7c6jdgte7ehcrctaispvtsndkvgc3bmevuvqi"
+    alt="Relief Assistant Logo"
+    className="w-8 h-8 rounded-full flex-shrink-0"
+  />
 );
 
 const ErrorIcon: React.FC = () => (
