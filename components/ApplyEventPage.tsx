@@ -22,7 +22,7 @@ const ApplyEventPage: React.FC<ApplyEventPageProps> = ({ formData, updateFormDat
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-white">Step 2: Event Details</h2>
+      <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Event Details</h2>
         <div>
           <label htmlFor="event" className="block text-sm font-medium text-white mb-2">Event</label>
           <select

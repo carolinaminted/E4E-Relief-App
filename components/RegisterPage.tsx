@@ -84,7 +84,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, switchToLogin }
       </button>
       <p className="text-sm text-center text-white">
         Already have an account?{' '}
-        <button type="button" onClick={switchToLogin} className="font-medium text-[#ff8400] hover:underline">
+        <button type="button" onClick={switchToLogin} className="font-medium text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 hover:underline">
           Sign In
         </button>
       </p>

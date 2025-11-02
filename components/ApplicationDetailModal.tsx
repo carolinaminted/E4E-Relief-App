@@ -61,7 +61,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({ applica
           </div>
           <div className="flex justify-between">
             <span className="font-semibold text-white opacity-70">Requested Amount:</span>
-            <span className="font-bold text-[#ff8400]">${application.requestedAmount.toFixed(2)}</span>
+            <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${application.requestedAmount.toFixed(2)}</span>
           </div>
         </div>
       </div>

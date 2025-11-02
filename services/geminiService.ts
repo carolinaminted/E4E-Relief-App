@@ -1,4 +1,4 @@
-import { GoogleGenAI, Chat } from "@google/genai";
+import { GoogleGenAI, Chat, FunctionDeclaration, Type } from "@google/genai";
 import type { Application } from '../types';
 
 const API_KEY = process.env.API_KEY;
@@ -9,40 +9,78 @@ if (!API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
+const addressSchema = {
+    type: Type.OBJECT,
+    properties: {
+        country: { type: Type.STRING, description: "The country of the address." },
+        street1: { type: Type.STRING, description: "The primary street line of the address." },
+        street2: { type: Type.STRING, description: "The secondary street line (e.g., apartment number)." },
+        city: { type: Type.STRING, description: "The city of the address." },
+        state: { type: Type.STRING, description: "The state or province of the address." },
+        zip: { type: Type.STRING, description: "The ZIP or postal code of the address." },
+    }
+};
+
+const updateUserProfileTool: FunctionDeclaration = {
+  name: 'updateUserProfile',
+  description: 'Updates the user profile information based on details provided in the conversation. Can be used for one or more fields at a time.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      firstName: { type: Type.STRING, description: 'The user\'s first name.' },
+      middleName: { type: Type.STRING, description: 'The user\'s middle name.' },
+      lastName: { type: Type.STRING, description: 'The user\'s last name.' },
+      suffix: { type: Type.STRING, description: 'A suffix for the user\'s name, like Jr. or III.' },
+      mobileNumber: { type: Type.STRING, description: 'The user\'s mobile phone number.' },
+      primaryAddress: { ...addressSchema, description: "The user's primary residential address." },
+      employmentStartDate: { type: Type.STRING, description: 'The date the user started their employment, in YYYY-MM-DD format.' },
+      householdIncome: { type: Type.NUMBER, description: 'The user\'s estimated annual household income as a number.' },
+      householdSize: { type: Type.NUMBER, description: 'The number of people in the user\'s household.' },
+      homeowner: { type: Type.STRING, description: 'Whether the user owns their home.', enum: ['Yes', 'No'] },
+    },
+  },
+};
+
+const startOrUpdateApplicationDraftTool: FunctionDeclaration = {
+  name: 'startOrUpdateApplicationDraft',
+  description: 'Creates or updates a draft for a relief application with event-specific details.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      event: { type: Type.STRING, description: 'The type of event the user is applying for relief from.', enum: ['Flood', 'Tornado', 'Tropical Storm/Hurricane', 'Wildfire'] },
+      requestedAmount: { type: Type.NUMBER, description: 'The amount of financial relief the user is requesting.' },
+    },
+  },
+};
+
+
 const applicationContext = `
-You are the Relief Assistant, an expert AI chatbot for the 'E4E Relief' application. Your primary goal is to provide helpful, accurate, and context-aware information to users about the app.
+You are the Relief Assistant, an expert AI chatbot for the 'E4E Relief' application.
 
-Here is the essential information about the application:
+Your **PRIMARY GOAL** is to proactively help users start or update their relief application by having a natural conversation. Listen for key pieces of information, and when you have them, use your available tools to update the application draft.
 
-- **Main Purpose**: The app allows users to apply for financial assistance during times of need.
-- **Key Pages**: The app has a Home page, an Apply page, a Profile page, and a Support page.
+**Your Capabilities & Tools**:
+- You can update a user's profile information using the \`updateUserProfile\` tool.
+- You can start or update an application draft with event details using the \`startOrUpdateApplicationDraft\` tool.
+- You can answer general questions about the application process, pages (Home, Apply, Profile, Support), and how to get support.
 
-- **"Apply for Relief" Form Questions**: When a user fills out an application, they MUST provide the following three pieces of information:
-  1.  **Hire Date**: The date the user was hired.
-  2.  **Event**: The reason for the aid request. Available options are "Flood", "Tornado", "Tropical Storm/Hurricane", and "Wildfire".
-  3.  **Requested Relief Payment**: The specific dollar amount the user is requesting.
+**Conversational Flow**:
+1.  **Listen and Extract**: When a user provides information (e.g., "I'm John Doe, I live in Charlotte, NC, was affected by the recent flood and need $1500"), extract the entities (\`firstName: "John"\`, \`lastName: "Doe"\`, \`primaryAddress: { city: "Charlotte", state: "NC" }\`, \`event: "Flood"\`, \`requestedAmount: 1500\`).
+2.  **Use Your Tools**: Call the appropriate tool(s) with the extracted information. You can call multiple tools at once if the user provides enough information.
+3.  **Confirm Your Actions**: After you call a tool, you MUST confirm what you've done. For example: "Thanks, John. I've updated your name and location, and started a draft application for the 'Flood' event with a requested amount of $1,500."
+4.  **Ask Clarifying Questions**: If information is missing, ask for it. For example, if a user says "I was in a tornado," respond with something like: "I'm sorry to hear that. I've noted the event as 'Tornado'. How much financial assistance are you requesting?"
+5.  **Be Helpful**: If the user just wants to ask a question, answer it based on the application context below.
 
-- **Support Page Information**:
-  - **Support Email**: support@e4erelief.example
-  - **Support Phone**: (800) 555-0199
-
-When a user asks a question, you MUST use the information above to form your answer.
+---
+**Application Context for Q&A**:
+- **Purpose**: The app allows users to apply for financial assistance during times of need.
+- **Support Info**: Email is support@e4erelief.example, Phone is (800) 555-0199.
 
 **Response Style**:
-- Your answers MUST be short and concise.
-- Get straight to the point and provide only the essential information needed to answer the question directly.
-- Avoid long paragraphs that take up a lot of screen space.
-
-**General Response Formatting**:
-- When you provide a list of items (like your capabilities), you MUST format it as a clean, bulleted list using hyphens. For example:
-  - First item
-  - Second item
-- Do NOT use asterisks for bolding or for list items in your general responses. Keep the text clean and simple.
-
-
-**Example Scenario**:
-- If a user asks: "What questions are on the application?"
-- Your correct response should be: "The application asks for your Hire Date, the Event or reason for the request (like a Flood or Wildfire), and the Requested Relief Payment amount."
+- Your answers MUST be short and concise. Get straight to the point.
+- When you provide a list of items, you MUST format it as a clean, bulleted list using hyphens.
+- Do NOT use asterisks. Keep the text clean.
+---
 `;
 
 
@@ -52,30 +90,15 @@ export function createChatSession(applications?: Application[]): Chat {
   if (applications && applications.length > 0) {
     const applicationList = applications.map(app => 
       `Application ID: ${app.id}\nEvent: ${app.event}\nAmount: $${app.requestedAmount}\nSubmitted: ${app.submittedDate}\nStatus: ${app.status}`
-    ).join('\n---\n'); // Use a clear separator
+    ).join('\n---\n');
 
     dynamicContext += `
-
-**User's Current Applications**:
-You have access to the user's current application data. When they ask about their applications, use this information to answer.
-
-Here is the data for the user's applications:
+**User's Application History**:
+You have access to the user's submitted applications. If they ask about them, use this data.
 ${applicationList}
-
-**Response Formatting Rules for Applications**:
-- When you list the details of multiple applications, present them as a simple, clean list.
-- Start with a clear introduction, for example: "You have two previous applications:".
-- For each application, list the details clearly as shown in the data above.
-- **Crucially, DO NOT use any markdown like asterisks (*) or hyphens (-) for list items when listing application details.** Use plain text only.
-
-**Example Scenario for a specific application**:
-- If a user asks: "What is the status of my application for the flood?"
-- Your correct response, based on the data, might be: "Your application for the Flood (ID: APP-1001) was submitted on 2023-08-12 and its current status is Awarded."
 `;
   } else {
-    dynamicContext += `
-
-The user currently has no submitted applications. If they ask about their applications, inform them they haven't submitted any yet.`;
+    dynamicContext += `\nThe user currently has no submitted applications.`;
   }
   
   const model = 'gemini-2.5-flash';
@@ -84,6 +107,7 @@ The user currently has no submitted applications. If they ask about their applic
     config: {
       systemInstruction: dynamicContext,
     },
+    tools: [{ functionDeclarations: [updateUserProfileTool, startOrUpdateApplicationDraftTool] }],
   });
 }
 

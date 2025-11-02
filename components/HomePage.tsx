@@ -12,7 +12,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
       className="bg-[#004b8d] p-6 rounded-lg shadow-lg hover:bg-[#005ca0]/50 transition-all duration-300 cursor-pointer hover:scale-105 transform"
       onClick={onClick}
     >
-      <h2 className="text-xl font-bold text-[#ff8400] mb-2">{title}</h2>
+      <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-2">{title}</h2>
       <p className="text-white">{description}</p>
     </div>
   );

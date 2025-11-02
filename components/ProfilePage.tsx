@@ -169,14 +169,42 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <button onClick={() => navigate('home')} className="text-[#ff8400] hover:text-[#ff9d33] mb-6">&larr; Back to Home</button>
+      <button onClick={() => navigate('home')} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 mb-6">&larr; Back to Home</button>
       
+      {/* Applications Section */}
+      <section className="bg-[#004b8d] p-8 rounded-lg shadow-lg mb-8">
+        <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] text-center border-b border-[#005ca0] pb-3">My Applications</h2>
+        <div className="space-y-4 pt-4">
+          {applications.length > 0 ? (
+            applications.map(app => (
+              <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[#005ca0] p-4 rounded-md flex justify-between items-center hover:bg-[#005ca0]/50 transition-colors duration-200">
+                <div>
+                  <p className="font-bold text-lg">{app.event}</p>
+                  <p className="text-sm text-gray-300">Submitted: {app.submittedDate}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${app.requestedAmount.toFixed(2)}</p>
+                  <p className="text-sm text-gray-300">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="text-center py-8 bg-[#003a70]/50 rounded-lg">
+                <p className="text-gray-300">You have not submitted any applications yet.</p>
+                <button onClick={() => navigate('apply')} className="mt-4 bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-4 rounded-md">
+                Apply Now
+                </button>
+            </div>
+          )}
+        </div>
+      </section>
+
       <form onSubmit={handleSave}>
         {/* 1a Contact Information */}
         <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
             <button type="button" onClick={() => toggleSection('contact')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.contact} aria-controls="contact-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-[#ff8400]">Contact Information</h2>
+                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Contact Information</h2>
                     {sectionValidation.contact && !openSections.contact && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.contact} />
@@ -197,7 +225,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
         <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
             <button type="button" onClick={() => toggleSection('primaryAddress')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.primaryAddress} aria-controls="address-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-[#ff8400]">Primary Address</h2>
+                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Primary Address</h2>
                     {sectionValidation.primaryAddress && !openSections.primaryAddress && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.primaryAddress} />
@@ -213,7 +241,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
         <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
             <button type="button" onClick={() => toggleSection('additionalDetails')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.additionalDetails} aria-controls="details-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-[#ff8400]">Additional Details</h2>
+                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Additional Details</h2>
                     {sectionValidation.additionalDetails && !openSections.additionalDetails && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.additionalDetails} />
@@ -242,7 +270,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
         <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
             <button type="button" onClick={() => toggleSection('mailingAddress')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.mailingAddress} aria-controls="mailing-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-[#ff8400]">Mailing Address</h2>
+                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Mailing Address</h2>
                     {sectionValidation.mailingAddress && !openSections.mailingAddress && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.mailingAddress} />
@@ -263,7 +291,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
         <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
             <button type="button" onClick={() => toggleSection('consent')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.consent} aria-controls="consent-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-[#ff8400]">Consent and Acknowledgement</h2>
+                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Consent and Acknowledgement</h2>
                     {sectionValidation.consent && !openSections.consent && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.consent} />
@@ -298,34 +326,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
             <button type="submit" className="bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-8 rounded-md transition-colors duration-200">Save Changes</button>
         </div>
       </form>
-
-      {/* Applications Section */}
-      <section className="bg-[#004b8d] p-8 rounded-lg shadow-lg mt-8">
-        <h2 className="text-2xl font-semibold mb-4 text-[#ff8400] text-center border-b border-[#005ca0] pb-3">My Applications</h2>
-        <div className="space-y-4 pt-4">
-          {applications.length > 0 ? (
-            applications.map(app => (
-              <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[#005ca0] p-4 rounded-md flex justify-between items-center hover:bg-[#005ca0]/50 transition-colors duration-200">
-                <div>
-                  <p className="font-bold text-lg">{app.event}</p>
-                  <p className="text-sm text-gray-300">Submitted: {app.submittedDate}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-lg text-[#ff8400]">${app.requestedAmount.toFixed(2)}</p>
-                  <p className="text-sm text-gray-300">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
-                </div>
-              </button>
-            ))
-          ) : (
-            <div className="text-center py-8 bg-[#003a70]/50 rounded-lg">
-                <p className="text-gray-300">You have not submitted any applications yet.</p>
-                <button onClick={() => navigate('apply')} className="mt-4 bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-4 rounded-md">
-                Apply Now
-                </button>
-            </div>
-          )}
-        </div>
-      </section>
 
       {selectedApplication && (
         <ApplicationDetailModal 

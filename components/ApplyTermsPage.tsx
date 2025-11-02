@@ -34,11 +34,11 @@ const ApplyTermsPage: React.FC<ApplyTermsPageProps> = ({ formData, updateFormDat
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-white">Step 4: Agreements &amp; Submission</h2>
+      <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Agreements &amp; Submission</h2>
       
       {/* Share Your Story Section */}
       <fieldset className="space-y-4 border border-[#005ca0] p-4 rounded-md">
-        <legend className="text-lg font-semibold text-[#ff8400] px-2">Share Your Story</legend>
+        <legend className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] px-2">Share Your Story</legend>
         <div>
           <label className="block text-white mb-2">Would you be willing to share your story with your employer? <span className="text-red-400">*</span></label>
           <p className="text-xs text-gray-400 mb-2 italic">*If yes, we will share your name and email address and your employer may contact you for additional information.</p>
@@ -70,7 +70,7 @@ const ApplyTermsPage: React.FC<ApplyTermsPageProps> = ({ formData, updateFormDat
 
       {/* Terms of Acceptance Section */}
       <fieldset className="space-y-2 border border-[#005ca0] p-4 rounded-md">
-        <legend className="text-lg font-semibold text-[#ff8400] px-2">Terms of Acceptance</legend>
+        <legend className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] px-2">Terms of Acceptance</legend>
         <div className="flex items-start">
           <input 
             id="terms" 
@@ -82,7 +82,7 @@ const ApplyTermsPage: React.FC<ApplyTermsPageProps> = ({ formData, updateFormDat
           />
           <label htmlFor="terms" className={`ml-3 text-sm text-white ${!termsViewed ? 'opacity-60': ''}`}>
             I acknowledge and agree that checking this box serves as my electronic signature and confirms that I have read, understand, and agree to the{' '}
-            <button type="button" onClick={handleOpenModal} className="font-medium text-[#ff8400] hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#004b8d] focus:ring-[#ff8400] rounded">
+            <button type="button" onClick={handleOpenModal} className="font-medium text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#004b8d] focus:ring-[#ff8400] rounded">
               Terms of Acceptance
             </button>. <span className="text-red-400">*</span>
           </label>

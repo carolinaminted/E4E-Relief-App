@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { UserProfile, Address } from '../types';
 
 interface ApplyContactPageProps {
@@ -70,12 +70,13 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
   };
 
   return (
-    <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-white">Step 1: Contact Information</h2>
+    <div className="space-y-8">
         
         {/* 1a Contact Information */}
-        <fieldset className="p-4 border border-[#005ca0] rounded-lg space-y-4">
-          <legend className="text-lg font-semibold text-[#ff8400] px-2">Contact Information</legend>
+        <div className="relative border border-[#005ca0] rounded-lg p-4 pt-6">
+          <h2 className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#004b8d] px-2 text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] whitespace-nowrap">
+            Contact Information
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormInput label="First Name" id="firstName" required value={formData.firstName} onChange={e => updateFormData({ firstName: e.target.value })} />
             <FormInput label="Middle Name(s)" id="middleName" value={formData.middleName || ''} onChange={e => updateFormData({ middleName: e.target.value })} />
@@ -84,17 +85,23 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
             <FormInput label="Email" id="email" required value={formData.email} disabled />
             <FormInput label="Mobile Number" id="mobileNumber" required value={formData.mobileNumber} onChange={e => updateFormData({ mobileNumber: e.target.value })} />
           </div>
-        </fieldset>
+        </div>
 
         {/* 1b Primary Address */}
-        <fieldset className="p-4 border border-[#005ca0] rounded-lg space-y-4">
-          <legend className="text-lg font-semibold text-[#ff8400] px-2">Primary Address</legend>
-          <AddressFields address={formData.primaryAddress} onUpdate={(field, value) => handleAddressChange('primaryAddress', field, value)} prefix="primary" />
-        </fieldset>
+        <div className="relative border border-[#005ca0] rounded-lg p-4 pt-6">
+            <h2 className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#004b8d] px-2 text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] whitespace-nowrap">
+                Primary Address
+            </h2>
+            <div className="space-y-4">
+                <AddressFields address={formData.primaryAddress} onUpdate={(field, value) => handleAddressChange('primaryAddress', field, value)} prefix="primary" />
+            </div>
+        </div>
         
         {/* 1c Additional Details */}
-        <fieldset className="p-4 border border-[#005ca0] rounded-lg space-y-4">
-            <legend className="text-lg font-semibold text-[#ff8400] px-2">Additional Details</legend>
+        <div className="relative border border-[#005ca0] rounded-lg p-4 pt-6">
+            <h2 className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#004b8d] px-2 text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] whitespace-nowrap">
+                Additional Details
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormInput type="date" label="Employment Start Date" id="employmentStartDate" required value={formData.employmentStartDate} onChange={e => updateFormData({ employmentStartDate: e.target.value })} />
                 <FormSelect label="Eligibility Type" id="eligibilityType" required value={formData.eligibilityType} onChange={e => updateFormData({ eligibilityType: e.target.value as UserProfile['eligibilityType'] })}>
@@ -111,35 +118,43 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
                     <option value="Spanish">Spanish</option>
                 </FormSelect>
             </div>
-        </fieldset>
+        </div>
 
         {/* 1d Mailing Address */}
-        <fieldset className="p-4 border border-[#005ca0] rounded-lg space-y-4">
-          <legend className="text-lg font-semibold text-[#ff8400] px-2">Mailing Address</legend>
-          <FormRadioGroup legend="Mailing Address Same as Primary?" name="isMailingAddressSame" options={['Yes', 'No']} value={formData.isMailingAddressSame ? 'Yes' : 'No'} onChange={value => updateFormData({ isMailingAddressSame: value === 'Yes' })} />
-          {!formData.isMailingAddressSame && (
-            <div className="pt-4 mt-4 border-t border-[#002a50] space-y-4">
-              <AddressFields address={formData.mailingAddress || { country: '', street1: '', city: '', state: '', zip: '' }} onUpdate={(field, value) => handleAddressChange('mailingAddress', field, value)} prefix="mailing" />
+        <div className="relative border border-[#005ca0] rounded-lg p-4 pt-6">
+            <h2 className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#004b8d] px-2 text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] whitespace-nowrap">
+                Mailing Address
+            </h2>
+            <div className="space-y-4">
+              <FormRadioGroup legend="Mailing Address Same as Primary?" name="isMailingAddressSame" options={['Yes', 'No']} value={formData.isMailingAddressSame ? 'Yes' : 'No'} onChange={value => updateFormData({ isMailingAddressSame: value === 'Yes' })} />
+              {!formData.isMailingAddressSame && (
+                  <div className="pt-4 mt-4 border-t border-[#002a50] space-y-4">
+                  <AddressFields address={formData.mailingAddress || { country: '', street1: '', city: '', state: '', zip: '' }} onUpdate={(field, value) => handleAddressChange('mailingAddress', field, value)} prefix="mailing" />
+                  </div>
+              )}
             </div>
-          )}
-        </fieldset>
+        </div>
 
         {/* 1e Consent and Acknowledgement */}
-        <fieldset className="p-4 border border-[#005ca0] rounded-lg space-y-4">
-            <legend className="text-lg font-semibold text-[#ff8400] px-2">Consent and Acknowledgement</legend>
-            <div className="flex items-start">
-                <input type="checkbox" id="ackPolicies" required checked={formData.ackPolicies} onChange={e => updateFormData({ ackPolicies: e.target.checked })} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
-                <label htmlFor="ackPolicies" className="ml-3 text-sm text-white">I have read and agree to E4E Relief’s Privacy Policy and Cookie Policy. <span className="text-red-400">*</span></label>
+        <div className="relative border border-[#005ca0] rounded-lg p-4 pt-6">
+            <h2 className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#004b8d] px-2 text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] whitespace-nowrap">
+                Consent & Acknowledgement
+            </h2>
+            <div className="space-y-3">
+                <div className="flex items-start">
+                    <input type="checkbox" id="ackPolicies" required checked={formData.ackPolicies} onChange={e => updateFormData({ ackPolicies: e.target.checked })} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
+                    <label htmlFor="ackPolicies" className="ml-3 text-sm text-white">I have read and agree to E4E Relief’s Privacy Policy and Cookie Policy. <span className="text-red-400">*</span></label>
+                </div>
+                <div className="flex items-start">
+                    <input type="checkbox" id="commConsent" required checked={formData.commConsent} onChange={e => updateFormData({ commConsent: e.target.checked })} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
+                    <label htmlFor="commConsent" className="ml-3 text-sm text-white">I consent to receive emails and text messages regarding my application. <span className="text-red-400">*</span></label>
+                </div>
+                <div className="flex items-start">
+                    <input type="checkbox" id="infoCorrect" required checked={formData.infoCorrect} onChange={e => updateFormData({ infoCorrect: e.target.checked })} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
+                    <label htmlFor="infoCorrect" className="ml-3 text-sm text-white">All information I have provided is accurate. <span className="text-red-400">*</span></label>
+                </div>
             </div>
-            <div className="flex items-start">
-                <input type="checkbox" id="commConsent" required checked={formData.commConsent} onChange={e => updateFormData({ commConsent: e.target.checked })} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
-                <label htmlFor="commConsent" className="ml-3 text-sm text-white">I consent to receive emails and text messages regarding my application. <span className="text-red-400">*</span></label>
-            </div>
-            <div className="flex items-start">
-                <input type="checkbox" id="infoCorrect" required checked={formData.infoCorrect} onChange={e => updateFormData({ infoCorrect: e.target.checked })} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
-                <label htmlFor="infoCorrect" className="ml-3 text-sm text-white">All information I have provided is accurate. <span className="text-red-400">*</span></label>
-            </div>
-        </fieldset>
+        </div>
       
       <div className="flex justify-end pt-4">
         <button onClick={nextStep} className="bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-6 rounded-md transition-colors duration-200">

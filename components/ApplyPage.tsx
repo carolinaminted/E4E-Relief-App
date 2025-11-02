@@ -23,20 +23,45 @@ interface ApplyPageProps {
   navigate: (page: 'home' | 'profile') => void;
   onSubmit: (application: ApplicationFormData) => Promise<void>;
   userProfile: UserProfile;
+  applicationDraft: Partial<ApplicationFormData> | null;
 }
 
-const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile }) => {
+const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile, applicationDraft }) => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<ApplicationFormData>({
-    profileData: { ...userProfile },
-    eventData: {
-      event: '',
-      requestedAmount: 0,
-    },
-    agreementData: {
-      shareStory: false,
-      receiveAdditionalInfo: false,
-    },
+  
+  // Initialize state by deeply merging the user's profile with any draft data from the chatbot
+  const [formData, setFormData] = useState<ApplicationFormData>(() => {
+    // FIX: Cast draftProfile to Partial<UserProfile> to allow safe access to nested properties like primaryAddress
+    const draftProfile: Partial<UserProfile> = applicationDraft?.profileData || {};
+    const draftEvent = applicationDraft?.eventData || {};
+
+    const initialProfile = {
+      ...userProfile,
+      ...draftProfile,
+      primaryAddress: {
+        ...userProfile.primaryAddress,
+        ...(draftProfile.primaryAddress || {}),
+      },
+      mailingAddress: {
+        ...(userProfile.mailingAddress || { country: '', street1: '', city: '', state: '', zip: '' }),
+        ...(draftProfile.mailingAddress || {}),
+      },
+    };
+
+    const initialEvent = {
+        event: '',
+        requestedAmount: 0,
+        ...draftEvent,
+    };
+
+    return {
+        profileData: initialProfile,
+        eventData: initialEvent,
+        agreementData: {
+            shareStory: false,
+            receiveAdditionalInfo: false,
+        },
+    };
   });
 
   const nextStep = () => setStep(prev => prev + 1);
@@ -85,8 +110,8 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile }
 
   return (
     <div className="p-8 max-w-4xl mx-auto w-full">
-      <button onClick={() => navigate('home')} className="text-[#ff8400] hover:text-[#ff9d33] mb-6">&larr; Back to Home</button>
-      <h1 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Apply for Relief</h1>
+      <button onClick={() => navigate('home')} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 mb-6">&larr; Back to Home</button>
+      <h1 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] text-center">Apply for Relief</h1>
       <div className="bg-[#004b8d] p-8 rounded-lg shadow-lg">
         {renderStep()}
       </div>
