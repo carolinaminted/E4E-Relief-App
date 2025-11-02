@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import type { UserProfile, Address } from '../types';
+import type { UserProfile, Address, ApplicationFormData } from '../types';
 import CountrySelector from './CountrySelector';
 import AddressHelper from './AddressHelper';
 import SearchableSelector from './SearchableSelector';
 import { employmentTypes, languages } from '../data/appData';
 import { formatPhoneNumber } from '../utils/formatting';
+import AIApplicationStarter from './AIApplicationStarter';
 
 interface ApplyContactPageProps {
   formData: UserProfile;
   updateFormData: (data: Partial<UserProfile>) => void;
   nextStep: () => void;
+  onAIParsed: (data: Partial<ApplicationFormData>) => void;
 }
 
 // Re-usable form components with updated styling
@@ -72,10 +74,11 @@ const NotificationIcon: React.FC = () => (
 );
 
 
-const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFormData, nextStep }) => {
+const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFormData, nextStep, onAIParsed }) => {
   const [errors, setErrors] = useState<Record<string, any>>({});
   const [openSections, setOpenSections] = useState({
-    contact: true,
+    aiStarter: true,
+    contact: false,
     primaryAddress: false,
     additionalDetails: false,
     mailingAddress: false,
@@ -230,6 +233,21 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
 
   return (
     <div className="space-y-4">
+
+        {/* AI Application Starter Section */}
+        <fieldset className="border-b border-[#005ca0] pb-4">
+            <button type="button" onClick={() => toggleSection('aiStarter')} className="w-full flex justify-between items-center text-left py-2" aria-expanded={openSections.aiStarter} aria-controls="ai-starter-section">
+                <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">AI Application Starter</h2>
+                </div>
+                <ChevronIcon isOpen={openSections.aiStarter} />
+            </button>
+            <div id="ai-starter-section" className={`transition-all duration-500 ease-in-out ${openSections.aiStarter ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                <div className="pt-4">
+                    <AIApplicationStarter onDetailsParsed={onAIParsed} variant="underline" />
+                </div>
+            </div>
+        </fieldset>
         
         {/* 1a Contact Information */}
         <fieldset className="border-b border-[#005ca0] pb-4">
@@ -356,7 +374,12 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
             </div>
         </fieldset>
       
-      <div className="flex justify-end pt-8">
+      <div className="flex justify-end pt-8 flex-col items-end">
+        {Object.keys(errors).length > 0 && (
+            <div className="bg-red-800/50 border border-red-600 text-red-200 p-3 rounded-md mb-4 w-full max-w-sm text-sm" role="alert">
+                <p className="font-bold text-center">Please correct the highlighted errors to continue.</p>
+            </div>
+        )}
         <button onClick={handleNext} className="bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-6 rounded-md transition-colors duration-200">
           Next
         </button>

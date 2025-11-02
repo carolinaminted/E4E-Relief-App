@@ -1,5 +1,6 @@
+
 import { GoogleGenAI, Chat, FunctionDeclaration, Type } from "@google/genai";
-import type { Application, Address } from '../types';
+import type { Application, Address, UserProfile, ApplicationFormData } from '../types';
 
 const API_KEY = process.env.API_KEY;
 
@@ -209,5 +210,93 @@ export async function parseAddressWithGemini(addressString: string): Promise<Par
   } catch (error) {
     console.error("Gemini address parsing failed:", error);
     throw new Error("Failed to parse address with AI.");
+  }
+}
+
+const applicationDetailsJsonSchema = {
+    type: Type.OBJECT,
+    properties: {
+        profileData: {
+            type: Type.OBJECT,
+            properties: {
+                firstName: { type: Type.STRING, description: 'The user\'s first name.' },
+                lastName: { type: Type.STRING, description: 'The user\'s last name.' },
+                primaryAddress: { ...addressSchema, description: "The user's primary residential address." },
+                employmentStartDate: { type: Type.STRING, description: 'The date the user started their employment, in YYYY-MM-DD format.' },
+                eligibilityType: { type: Type.STRING, description: 'The user\'s employment type.', enum: ['Full-time', 'Part-time', 'Contractor'] },
+                householdIncome: { type: Type.NUMBER, description: 'The user\'s estimated annual household income as a number.' },
+                householdSize: { type: Type.NUMBER, description: 'The number of people in the user\'s household.' },
+                homeowner: { type: Type.STRING, description: 'Whether the user owns their home.', enum: ['Yes', 'No'] },
+            }
+        },
+        eventData: {
+            type: Type.OBJECT,
+            properties: {
+                event: { type: Type.STRING, description: 'The type of event the user is applying for relief from.', enum: ['Flood', 'Tornado', 'Tropical Storm/Hurricane', 'Wildfire'] },
+                requestedAmount: { type: Type.NUMBER, description: 'The amount of financial relief the user is requesting.' },
+            }
+        }
+    }
+};
+
+export async function parseApplicationDetailsWithGemini(
+  description: string
+): Promise<Partial<ApplicationFormData>> {
+  if (!description) return {};
+
+  const prompt = `
+    Parse the user's description of their situation into a structured JSON object for a relief application.
+    Extract any mentioned details that match the schema, including personal info, address, event details, and other profile information like employment start date, household size/income, and home ownership status.
+    
+    Rules for address parsing:
+    1. For addresses in the United States, validate and correct any misspellings in the street name, city, or state.
+    2. Standardize capitalization:
+       - Street names and city should be in Title Case (e.g., "Main Street", "San Francisco").
+       - The state for US addresses must be a 2-letter uppercase abbreviation (e.g., "CA").
+    3. Omit any keys for address components that are not present in the original string (like \`street2\`).
+
+    Rules for other fields:
+    1. employmentStartDate: Must be in YYYY-MM-DD format. Infer the year if not specified (assume current year).
+    2. householdIncome: Extract as a number, ignoring currency symbols or commas.
+    3. homeowner: Should be "Yes" or "No".
+
+    User's description: "${description}"
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: applicationDetailsJsonSchema,
+      },
+    });
+
+    const jsonString = response.text.trim();
+    if (jsonString) {
+      const parsed = JSON.parse(jsonString);
+      // Clean up nulls
+      if (parsed.profileData) {
+        Object.keys(parsed.profileData).forEach(key => {
+            if (parsed.profileData[key] === null) delete parsed.profileData[key];
+        });
+        if (parsed.profileData.primaryAddress) {
+            Object.keys(parsed.profileData.primaryAddress).forEach(key => {
+                if (parsed.profileData.primaryAddress[key] === null) delete parsed.profileData.primaryAddress[key];
+            });
+        }
+      }
+      if (parsed.eventData) {
+          Object.keys(parsed.eventData).forEach(key => {
+            if (parsed.eventData[key] === null) delete parsed.eventData[key];
+        });
+      }
+      return parsed as Partial<ApplicationFormData>;
+    }
+    return {};
+  } catch (error) {
+    console.error("Gemini application details parsing failed:", error);
+    throw new Error("Failed to parse application details with AI.");
   }
 }

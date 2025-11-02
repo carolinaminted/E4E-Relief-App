@@ -63,3 +63,15 @@ export interface Application {
   shareStory: boolean;
   receiveAdditionalInfo: boolean;
 }
+
+export interface ApplicationFormData {
+  profileData: UserProfile;
+  eventData: {
+    event: string;
+    requestedAmount: number;
+  };
+  agreementData: {
+    shareStory: boolean;
+    receiveAdditionalInfo: boolean;
+  };
+}
