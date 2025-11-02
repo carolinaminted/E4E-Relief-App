@@ -28,11 +28,16 @@ const initialApplications: Record<string, Application[]> = {
   'user@example.com': [
     {
       id: 'APP-1001',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'user@example.com',
       hireDate: '2020-05-15',
       event: 'Flood',
       requestedAmount: 2500,
       submittedDate: '2023-08-12',
       status: 'Awarded',
+      shareStory: true,
+      receiveAdditionalInfo: false,
     },
   ],
 };
@@ -91,6 +96,27 @@ function App() {
   const navigate = useCallback((targetPage: Page) => {
     setPage(targetPage);
   }, []);
+  
+  const handleProfileUpdate = useCallback((updatedProfile: UserProfile) => {
+    if (!currentUser) return;
+
+    setCurrentUser(updatedProfile);
+    setUsers(prev => {
+        const currentUserData = prev[currentUser.email];
+        if (currentUserData) {
+            return {
+                ...prev,
+                [currentUser.email]: {
+                    ...currentUserData,
+                    firstName: updatedProfile.firstName,
+                    lastName: updatedProfile.lastName,
+                }
+            };
+        }
+        return prev;
+    });
+    // Maybe show a success message
+  }, [currentUser]);
 
   const handleApplicationSubmit = useCallback(async (newApplicationData: Omit<Application, 'id' | 'submittedDate' | 'status'>) => {
     if (!currentUser) return;
@@ -112,32 +138,21 @@ function App() {
       ...prev,
       [currentUser.email]: [...(prev[currentUser.email] || []), newApplication],
     }));
+    
+    // If the user updated their name in the application, update their profile too
+    if (newApplicationData.firstName !== currentUser.firstName || newApplicationData.lastName !== currentUser.lastName) {
+        handleProfileUpdate({
+            firstName: newApplicationData.firstName,
+            lastName: newApplicationData.lastName,
+            email: currentUser.email,
+        });
+    }
+
     setLastSubmittedApp(newApplication);
     setPage('submissionSuccess');
 
-  }, [currentUser]);
+  }, [currentUser, handleProfileUpdate]);
 
-  const handleProfileUpdate = useCallback((updatedProfile: UserProfile) => {
-    if (!currentUser) return;
-
-    setCurrentUser(updatedProfile);
-    setUsers(prev => {
-        const currentUserData = prev[currentUser.email];
-        if (currentUserData) {
-            return {
-                ...prev,
-                [currentUser.email]: {
-                    ...currentUserData,
-                    firstName: updatedProfile.firstName,
-                    lastName: updatedProfile.lastName,
-                }
-            };
-        }
-        return prev;
-    });
-    // Maybe show a success message
-  }, [currentUser]);
-  
   const renderPage = () => {
     if (!currentUser) {
       return (
@@ -165,7 +180,7 @@ function App() {
     
     switch (page) {
       case 'apply':
-        return <ApplyPage navigate={navigate} onSubmit={handleApplicationSubmit} />;
+        return <ApplyPage navigate={navigate} onSubmit={handleApplicationSubmit} userProfile={currentUser} />;
       case 'profile':
         return <ProfilePage navigate={navigate} applications={userApplications} userProfile={currentUser} onProfileUpdate={handleProfileUpdate} />;
       case 'support':
@@ -183,13 +198,12 @@ function App() {
     <div className="bg-[#003a70] text-white min-h-screen font-sans flex flex-col">
       {currentUser && (
         <header className="bg-[#004b8d]/80 backdrop-blur-sm p-4 flex justify-between items-center shadow-md sticky top-0 z-40 border-b border-[#002a50]">
-          <button onClick={() => navigate('home')} className="flex items-center gap-2 transition-opacity duration-200 hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#003a70] focus:ring-[#ff8400] rounded-md p-1" aria-label="Go to Home page">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-[#edda26]" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-            </svg>
-            <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
-              E4E Relief
-            </h1>
+          <button onClick={() => navigate('home')} className="flex items-center transition-opacity duration-200 hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#003a70] focus:ring-[#ff8400] rounded-md p-1" aria-label="Go to Home page">
+            <img
+              src="https://gateway.pinata.cloud/ipfs/bafybeihjhfybcxtlj6r4u7c6jdgte7ehcrctaispvtsndkvgc3bmevuvqi"
+              alt="E4E Relief Logo"
+              className="h-10 w-auto"
+            />
           </button>
           <div className="flex items-center gap-4">
             <span className="text-gray-200">Welcome, {currentUser.firstName}</span>

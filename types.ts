@@ -17,9 +17,17 @@ export interface UserProfile {
 
 export interface Application {
   id: string;
+  // User info at time of submission
+  firstName: string;
+  lastName: string;
+  email: string;
+  // ---
   hireDate: string;
   event: string;
   requestedAmount: number;
   submittedDate: string;
   status: 'Submitted' | 'Awarded' | 'Declined';
+  // New fields
+  shareStory: boolean;
+  receiveAdditionalInfo: boolean;
 }
