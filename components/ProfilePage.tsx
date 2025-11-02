@@ -26,10 +26,11 @@ const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label:
         <label htmlFor={id} className="block text-sm font-medium text-white mb-1">
             {label} {required && <span className="text-red-400">*</span>}
         </label>
-        <input id={id} {...props} className={`w-full bg-[#005ca0] border rounded-md p-2 text-white disabled:bg-[#003a70] disabled:text-gray-400 disabled:cursor-not-allowed ${error ? 'border-red-500' : 'border-[#005ca0]'}`} />
+        <input id={id} {...props} className={`w-full bg-transparent border-0 border-b p-2 text-white focus:outline-none focus:ring-0 ${error ? 'border-red-500' : 'border-[#005ca0] focus:border-[#ff8400]'} disabled:bg-transparent disabled:border-b disabled:border-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed`} />
         {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
     </div>
 );
+
 
 const FormRadioGroup: React.FC<{ legend: string, name: string, options: string[], value: string, onChange: (value: any) => void, required?: boolean, error?: string }> = ({ legend, name, options, value, onChange, required, error }) => (
     <div>
@@ -50,11 +51,11 @@ const FormRadioGroup: React.FC<{ legend: string, name: string, options: string[]
 
 const AddressFields: React.FC<{ address: Address, onUpdate: (field: keyof Address, value: string) => void, onBulkUpdate: (parsedAddress: Partial<Address>) => void, prefix: string, errors: Record<string, string> }> = ({ address, onUpdate, onBulkUpdate, prefix, errors }) => (
     <>
-        <AddressHelper onAddressParsed={onBulkUpdate} variant="boxed" />
-        <CountrySelector id={`${prefix}Country`} required value={address.country} onUpdate={value => onUpdate('country', value)} error={errors.country}/>
+        <AddressHelper onAddressParsed={onBulkUpdate} variant="underline" />
+        <CountrySelector id={`${prefix}Country`} required value={address.country} onUpdate={value => onUpdate('country', value)} variant="underline" error={errors.country}/>
         <FormInput label="Street 1" id={`${prefix}Street1`} required value={address.street1} onChange={e => onUpdate('street1', e.target.value)} error={errors.street1} />
         <FormInput label="Street 2" id={`${prefix}Street2`} value={address.street2 || ''} onChange={e => onUpdate('street2', e.target.value)} />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormInput label="City" id={`${prefix}City`} required value={address.city} onChange={e => onUpdate('city', e.target.value)} error={errors.city} />
             <FormInput label="State or Province" id={`${prefix}State`} required value={address.state} onChange={e => onUpdate('state', e.target.value)} error={errors.state} />
             <FormInput label="ZIP/Postal Code" id={`${prefix}Zip`} required value={address.zip} onChange={e => onUpdate('zip', e.target.value)} error={errors.zip} />
@@ -81,6 +82,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
   const [formData, setFormData] = useState<UserProfile>(userProfile);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [errors, setErrors] = useState<Record<string, any>>({});
+  const [isApplicationsOpen, setIsApplicationsOpen] = useState(true);
   const [openSections, setOpenSections] = useState({
     contact: false,
     primaryAddress: false,
@@ -251,45 +253,51 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
       <button onClick={() => navigate('home')} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 mb-6">&larr; Back to Home</button>
       
       {/* Applications Section */}
-      <section className="bg-[#004b8d] p-8 rounded-lg shadow-lg mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] text-center border-b border-[#005ca0] pb-3">My Applications</h2>
-        <div className="space-y-4 pt-4">
-          {applications.length > 0 ? (
-            applications.map(app => (
-              <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[#005ca0] p-4 rounded-md flex justify-between items-center hover:bg-[#005ca0]/50 transition-colors duration-200">
-                <div>
-                  <p className="font-bold text-lg">{app.event}</p>
-                  <p className="text-sm text-gray-300">Submitted: {app.submittedDate}</p>
+        <section className="border-b border-[#005ca0] pb-4 mb-4">
+            <button type="button" onClick={() => setIsApplicationsOpen(p => !p)} className="w-full flex justify-between items-center text-left py-2" aria-expanded={isApplicationsOpen}>
+                <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">My Applications</h2>
+                <ChevronIcon isOpen={isApplicationsOpen} />
+            </button>
+            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isApplicationsOpen ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                <div className="space-y-4 pt-4">
+                {applications.length > 0 ? (
+                    applications.map(app => (
+                    <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[#004b8d] p-4 rounded-md flex justify-between items-center hover:bg-[#005ca0]/50 transition-colors duration-200">
+                        <div>
+                        <p className="font-bold text-lg">{app.event}</p>
+                        <p className="text-sm text-gray-300">Submitted: {app.submittedDate}</p>
+                        </div>
+                        <div className="text-right">
+                        <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${app.requestedAmount.toFixed(2)}</p>
+                        <p className="text-sm text-gray-300">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
+                        </div>
+                    </button>
+                    ))
+                ) : (
+                    <div className="text-center py-8 bg-[#003a70]/50 rounded-lg">
+                        <p className="text-gray-300">You have not submitted any applications yet.</p>
+                        <button onClick={() => navigate('apply')} className="mt-4 bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-4 rounded-md">
+                        Apply Now
+                        </button>
+                    </div>
+                )}
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${app.requestedAmount.toFixed(2)}</p>
-                  <p className="text-sm text-gray-300">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
-                </div>
-              </button>
-            ))
-          ) : (
-            <div className="text-center py-8 bg-[#003a70]/50 rounded-lg">
-                <p className="text-gray-300">You have not submitted any applications yet.</p>
-                <button onClick={() => navigate('apply')} className="mt-4 bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-4 rounded-md">
-                Apply Now
-                </button>
             </div>
-          )}
-        </div>
-      </section>
+        </section>
 
-      <form onSubmit={handleSave}>
+
+      <form onSubmit={handleSave} className="space-y-4">
         {/* 1a Contact Information */}
-        <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
-            <button type="button" onClick={() => toggleSection('contact')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.contact} aria-controls="contact-section">
+        <fieldset className="border-b border-[#005ca0] pb-4">
+            <button type="button" onClick={() => toggleSection('contact')} className="w-full flex justify-between items-center text-left py-2" aria-expanded={openSections.contact} aria-controls="contact-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Contact Information</h2>
+                    <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Contact Information</h2>
                     {sectionHasErrors.contact && !openSections.contact && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.contact} />
             </button>
-            <div id="contact-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.contact ? 'max-h-[1000px] opacity-100 mt-6 pt-6 border-t border-[#005ca0]' : 'max-h-0 opacity-0'}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div id="contact-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.contact ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                     <FormInput label="First Name" id="firstName" required value={formData.firstName} onChange={e => handleFormChange('firstName', e.target.value)} error={errors.firstName} />
                     <FormInput label="Middle Name(s)" id="middleName" value={formData.middleName || ''} onChange={e => handleFormChange('middleName', e.target.value)} />
                     <FormInput label="Last Name" id="lastName" required value={formData.lastName} onChange={e => handleFormChange('lastName', e.target.value)} error={errors.lastName} />
@@ -301,32 +309,32 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
         </fieldset>
 
         {/* 1b Primary Address */}
-        <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
-            <button type="button" onClick={() => toggleSection('primaryAddress')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.primaryAddress} aria-controls="address-section">
+        <fieldset className="border-b border-[#005ca0] pb-4">
+            <button type="button" onClick={() => toggleSection('primaryAddress')} className="w-full flex justify-between items-center text-left py-2" aria-expanded={openSections.primaryAddress} aria-controls="address-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Primary Address</h2>
+                    <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Primary Address</h2>
                     {sectionHasErrors.primaryAddress && !openSections.primaryAddress && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.primaryAddress} />
             </button>
-            <div id="address-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.primaryAddress ? 'max-h-[1000px] opacity-100 mt-6 pt-6 border-t border-[#005ca0]' : 'max-h-0 opacity-0'}`}>
-                <div className="space-y-4">
+            <div id="address-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.primaryAddress ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                <div className="space-y-6 pt-4">
                     <AddressFields address={formData.primaryAddress} onUpdate={(field, value) => handleAddressChange('primaryAddress', field, value)} onBulkUpdate={(parsed) => handleAddressBulkChange('primaryAddress', parsed)} prefix="primary" errors={errors.primaryAddress || {}} />
                 </div>
             </div>
         </fieldset>
         
         {/* 1c Additional Details */}
-        <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
-            <button type="button" onClick={() => toggleSection('additionalDetails')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.additionalDetails} aria-controls="details-section">
+        <fieldset className="border-b border-[#005ca0] pb-4">
+            <button type="button" onClick={() => toggleSection('additionalDetails')} className="w-full flex justify-between items-center text-left py-2" aria-expanded={openSections.additionalDetails} aria-controls="details-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Additional Details</h2>
+                    <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Additional Details</h2>
                     {sectionHasErrors.additionalDetails && !openSections.additionalDetails && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.additionalDetails} />
             </button>
-            <div id="details-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.additionalDetails ? 'max-h-[1000px] opacity-100 mt-6 pt-6 border-t border-[#005ca0]' : 'max-h-0 opacity-0'}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div id="details-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.additionalDetails ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                     <FormInput type="date" label="Employment Start Date" id="employmentStartDate" required value={formData.employmentStartDate} onChange={e => handleFormChange('employmentStartDate', e.target.value)} error={errors.employmentStartDate} />
                     <SearchableSelector
                         label="Eligibility Type"
@@ -335,7 +343,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                         value={formData.eligibilityType}
                         options={employmentTypes}
                         onUpdate={value => handleFormChange('eligibilityType', value)}
-                        variant="boxed"
+                        variant="underline"
                         error={errors.eligibilityType}
                     />
                     <FormInput type="number" label="Estimated Annual Household Income" id="householdIncome" required value={formData.householdIncome} onChange={e => handleFormChange('householdIncome', parseFloat(e.target.value) || '')} error={errors.householdIncome} />
@@ -347,26 +355,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                         value={formData.preferredLanguage || ''}
                         options={languages}
                         onUpdate={value => handleFormChange('preferredLanguage', value)}
-                        variant="boxed"
+                        variant="underline"
                     />
                 </div>
             </div>
         </fieldset>
 
         {/* 1d Mailing Address */}
-        <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
-            <button type="button" onClick={() => toggleSection('mailingAddress')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.mailingAddress} aria-controls="mailing-section">
+        <fieldset className="border-b border-[#005ca0] pb-4">
+            <button type="button" onClick={() => toggleSection('mailingAddress')} className="w-full flex justify-between items-center text-left py-2" aria-expanded={openSections.mailingAddress} aria-controls="mailing-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Mailing Address</h2>
+                    <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Mailing Address</h2>
                     {sectionHasErrors.mailingAddress && !openSections.mailingAddress && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.mailingAddress} />
             </button>
-            <div id="mailing-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.mailingAddress ? 'max-h-[1000px] opacity-100 mt-6 pt-6 border-t border-[#005ca0]' : 'max-h-0 opacity-0'}`}>
-                <div className="space-y-4">
+            <div id="mailing-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.mailingAddress ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                <div className="space-y-4 pt-4">
                     <FormRadioGroup legend="Mailing Address Same as Primary?" name="isMailingAddressSame" options={['Yes', 'No']} value={formData.isMailingAddressSame ? 'Yes' : 'No'} onChange={value => handleFormChange('isMailingAddressSame', value === 'Yes')} />
                     {!formData.isMailingAddressSame && (
-                        <div className="pt-4 mt-4 border-t border-[#002a50] space-y-4">
+                        <div className="pt-4 mt-4 border-t border-[#002a50] space-y-6">
                             <AddressFields address={formData.mailingAddress || { country: '', street1: '', city: '', state: '', zip: '' }} onUpdate={(field, value) => handleAddressChange('mailingAddress', field, value)} onBulkUpdate={(parsed) => handleAddressBulkChange('mailingAddress', parsed)} prefix="mailing" errors={errors.mailingAddress || {}} />
                         </div>
                     )}
@@ -375,16 +383,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
         </fieldset>
 
         {/* 1e Consent and Acknowledgement */}
-        <fieldset className="bg-[#004b8d] p-6 rounded-lg shadow-lg mb-8">
-            <button type="button" onClick={() => toggleSection('consent')} className="w-full flex justify-between items-center text-left" aria-expanded={openSections.consent} aria-controls="consent-section">
+        <fieldset className="pb-4">
+            <button type="button" onClick={() => toggleSection('consent')} className="w-full flex justify-between items-center text-left py-2" aria-expanded={openSections.consent} aria-controls="consent-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Consent and Acknowledgement</h2>
+                    <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Consent & Acknowledgement</h2>
                     {sectionHasErrors.consent && !openSections.consent && <NotificationIcon />}
                 </div>
                 <ChevronIcon isOpen={openSections.consent} />
             </button>
-            <div id="consent-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.consent ? 'max-h-[1000px] opacity-100 mt-6 pt-6 border-t border-[#005ca0]' : 'max-h-0 opacity-0'}`}>
-                <div className="space-y-4">
+            <div id="consent-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.consent ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                <div className="space-y-3 pt-4">
                      {errors.ackPolicies && <p className="text-red-400 text-xs">{errors.ackPolicies}</p>}
                     <div className="flex items-start">
                         <input type="checkbox" id="ackPolicies" required checked={formData.ackPolicies} onChange={e => handleFormChange('ackPolicies', e.target.checked)} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
@@ -404,7 +412,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
             </div>
         </fieldset>
 
-        <div className="flex justify-center mt-8 flex-col items-center">
+        <div className="flex justify-center pt-8 flex-col items-center">
             {Object.keys(errors).length > 0 && (
                 <div className="bg-red-800/50 border border-red-600 text-red-200 p-4 rounded-md mb-4 w-full max-w-md text-sm">
                     <p className="font-bold">Please correct the highlighted errors before saving.</p>
