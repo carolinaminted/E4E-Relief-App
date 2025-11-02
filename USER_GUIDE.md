@@ -142,10 +142,50 @@ This service evaluates the applicant’s data against fund-specific eligibility 
 - **Transparent Reasoning** — every decision carries human-readable justification.
 - **Audit Ready** — results are logged for compliance and reporting.
 
-### Next Step for Integration
-Replace the in-app mock AI call with your **Azure Function endpoint** that wraps OpenAI or Gemini logic.  
-This enables real-time eligibility and award decisioning while maintaining full traceability inside Dynamics 365.
 
+# Integration Overview — Azure AD B2C + Dataverse
+
+## High-Level Plan
+
+1. **Authentication**
+   - Use **Azure AD B2C** with **OIDC + PKCE** for secure sign-in and sign-up.
+   - Each B2C user is mapped to a **Dataverse Contact** by storing the B2C `oid` (Object ID) on the Contact record.
+
+2. **Backend API Layer**
+   - Introduce a **thin backend API** (Azure Function or App Service) as the single integration point between the mobile app and Dataverse.
+   - This API validates B2C access tokens, executes business logic, and prevents client-side exposure of secrets.
+
+3. **Token Flow**
+   - **Frontend → API**: Authenticated using **B2C access tokens**.
+   - **API → Dataverse**: Authenticated using a **Dataverse Application User** (via Azure AD app registration with client credentials).
+
+4. **Data Integration**
+   - Replace all mock or local state with **live Dataverse data**:
+     - **Contacts** for user profiles.
+     - **Applications** for relief submissions.
+     - **Awards** for grant outcomes.
+   - Use **TanStack Query** to manage cache, sync, and optimistic updates.
+
+5. **AI Decisioning**
+   - Run **AI eligibility and grant decisioning** server-side within the API before saving an Application.
+   - Store decision outcome, reasoning, and audit trail directly in Dataverse.
+
+6. **Security & Configuration**
+   - Store tokens securely in **Keychain/Keystore**.
+   - Keep environment variables and API endpoints in a **.env file**.
+   - Avoid embedding secrets in mobile code.
+   - Enforce **least-privilege roles** and **data access controls** in Dataverse.
+
+7. **Deployment & CI/CD**
+   - Implement automated build and release pipelines to:
+     - Build and deploy the React Native app.
+     - Deploy the API to Azure.
+     - Run integration and regression tests against a **UAT Dataverse** environment.
+
+8. **Observability & Reliability**
+   - Add **structured logs**, **correlation IDs**, and **error telemetry**.
+   - AI decision logs with updates on cases with artifacts used to make the eligibility award or decline decision
+   - Provide **user-friendly error messages** for predictable recovery and smoother UX.
 
 
 
