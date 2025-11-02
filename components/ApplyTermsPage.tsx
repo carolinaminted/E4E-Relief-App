@@ -19,6 +19,10 @@ const ApplyTermsPage: React.FC<ApplyTermsPageProps> = ({ formData, updateFormDat
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
+  };
+  
+  const handleModalClose = () => {
+    setIsModalOpen(false);
     setTermsViewed(true);
   };
   
@@ -114,7 +118,7 @@ const ApplyTermsPage: React.FC<ApplyTermsPageProps> = ({ formData, updateFormDat
         </button>
       </div>
 
-      {isModalOpen && <TermsModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <TermsModal onClose={handleModalClose} />}
     </div>
   );
 };

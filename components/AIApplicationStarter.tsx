@@ -49,16 +49,16 @@ const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onDetailsPa
 
   return (
     <div className="bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0]">
-      <p className="text-sm text-gray-300 mb-2">
-        Describe your situation below. Include details like the event, impact, requested amount, household size/income, and home ownership status. Our AI will help pre-fill your application.
+      <p className="text-sm text-white mb-2">
+        Describe your situation, including the event, impact, amount needed, household size/income, home ownership, mobile number, and preferred language. Our AI will pre-fill your application.
       </p>
       <div className="flex flex-col md:flex-row gap-2">
         <textarea
           id="ai-starter-input"
           value={descriptionInput}
           onChange={handleInputChange}
-          placeholder="e.g., I'm a homeowner affected by the recent tornado in Anytown, CA. My home was damaged and I need about $2500 for repairs. Our household of 4 makes about $60k/year."
-          rows={3}
+          placeholder="e.g., I'm a homeowner affected by the recent tornado in Anytown, CA. My home was damaged and I need about $2500 for repairs. Our household of 4 makes about $60k/year. My phone is 555-123-4567 and I prefer to communicate in Spanish."
+          rows={6}
           className={textareaClasses[variant]}
           disabled={isLoading}
         />

@@ -1,5 +1,4 @@
 
-
 import React, { useState, useCallback, useMemo } from 'react';
 import type { UserProfile, Application } from './types';
 import { evaluateApplicationEligibility } from './services/geminiService';
@@ -61,6 +60,9 @@ const initialApplications: Record<string, Application[]> = {
       requestedAmount: 2500,
       submittedDate: '2023-08-12',
       status: 'Awarded',
+      decisionedDate: '2023-08-12',
+      twelveMonthGrantMax: 10000,
+      lifetimeGrantMax: 50000,
       shareStory: true,
       receiveAdditionalInfo: false,
     },
@@ -168,8 +170,8 @@ function App() {
     
     const tempId = `APP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
-    // Call the AI service to get the status
-    const decision = await evaluateApplicationEligibility({
+    // Call the AI service to get the status and decision date
+    const { decision, decisionedDate } = await evaluateApplicationEligibility({
         id: tempId,
         employmentStartDate: appFormData.profileData.employmentStartDate,
         event: appFormData.eventData.event,
@@ -183,6 +185,9 @@ function App() {
       requestedAmount: appFormData.eventData.requestedAmount,
       submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
       status: decision,
+      decisionedDate: decisionedDate,
+      twelveMonthGrantMax: 10000, // Placeholder
+      lifetimeGrantMax: 50000,   // Placeholder
       shareStory: appFormData.agreementData.shareStory,
       receiveAdditionalInfo: appFormData.agreementData.receiveAdditionalInfo,
     };
@@ -274,7 +279,7 @@ function App() {
   return (
     <div className="bg-[#003a70] text-white min-h-screen font-sans flex flex-col">
       {currentUser && (
-        <header className="bg-[#004b8d]/80 backdrop-blur-sm p-4 flex justify-between items-center shadow-md sticky top-0 z-40 border-b border-[#002a50]">
+        <header className="bg-[#004b8d]/80 backdrop-blur-sm p-4 flex justify-between items-center shadow-md sticky top-0 z-30 border-b border-[#002a50]">
           <button onClick={() => navigate('home')} className="flex items-center transition-opacity duration-200 hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#003a70] focus:ring-[#ff8400] rounded-md p-1" aria-label="Go to Home page">
             <img
               src="https://gateway.pinata.cloud/ipfs/bafybeihjhfybcxtlj6r4u7c6jdgte7ehcrctaispvtsndkvgc3bmevuvqi"
