@@ -142,6 +142,9 @@ This service evaluates the applicant’s data against fund-specific eligibility 
 <img width="324" height="611" alt="image" src="https://github.com/user-attachments/assets/e5fca3f2-3c6c-4d52-8576-9a69efa6412a" />
 
 
+<img width="339" height="605" alt="image" src="https://github.com/user-attachments/assets/0361b00d-7d99-4189-8b49-03d7536d389c" />
+
+
 ### Key Advantages
 - **Instant Eligibility Feedback** — applicants know their outcome immediately.
 - **Consistent Rule Enforcement** — AI applies the same logic for all applicants.
