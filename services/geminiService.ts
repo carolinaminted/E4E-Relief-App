@@ -224,6 +224,8 @@ const applicationDetailsJsonSchema = {
                 householdIncome: { type: Type.NUMBER, description: 'The user\'s estimated annual household income as a number.' },
                 householdSize: { type: Type.NUMBER, description: 'The number of people in the user\'s household.' },
                 homeowner: { type: Type.STRING, description: 'Whether the user owns their home.', enum: ['Yes', 'No'] },
+                mobileNumber: { type: Type.STRING, description: "The user's mobile phone number." },
+                preferredLanguage: { type: Type.STRING, description: "The user's preferred language for communication." },
             }
         },
         eventData: {
@@ -243,7 +245,7 @@ export async function parseApplicationDetailsWithGemini(
 
   const prompt = `
     Parse the user's description of their situation into a structured JSON object for a relief application.
-    Extract any mentioned details that match the schema, including personal info, address, event details, and other profile information like employment start date, household size/income, and home ownership status.
+    Extract any mentioned details that match the schema, including personal info, address, mobile number, preferred language, event details, and other profile information like employment start date, household size/income, and home ownership status.
     
     Rules for address parsing:
     1. For addresses in the United States, validate and correct any misspellings in the street name, city, or state.
@@ -256,6 +258,8 @@ export async function parseApplicationDetailsWithGemini(
     1. employmentStartDate: Must be in YYYY-MM-DD format. Infer the year if not specified (assume current year).
     2. householdIncome: Extract as a number, ignoring currency symbols or commas.
     3. homeowner: Should be "Yes" or "No".
+    4. mobileNumber: Extract any phone number mentioned by the user.
+    5. preferredLanguage: Extract any preferred language for communication mentioned by the user.
 
     User's description: "${description}"
   `;

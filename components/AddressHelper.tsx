@@ -38,7 +38,7 @@ const AddressHelper: React.FC<AddressHelperProps> = ({ onAddressParsed, variant 
 
   return (
     <div className="bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0] mb-4">
-      <p className="text-xs text-gray-300 mb-2">
+      <p className="text-xs text-white mb-2">
         Type or paste a full address below and let our AI fill in the fields for you.
       </p>
       <div className="flex flex-col md:flex-row gap-2">
