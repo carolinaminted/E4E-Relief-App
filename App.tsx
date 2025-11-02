@@ -61,6 +61,9 @@ const initialApplications: Record<string, Application[]> = {
       requestedAmount: 2500,
       submittedDate: '2023-08-12',
       status: 'Awarded',
+      decisionedDate: '2023-08-12',
+      twelveMonthGrantMax: 10000,
+      lifetimeGrantMax: 50000,
       shareStory: true,
       receiveAdditionalInfo: false,
     },
@@ -168,8 +171,8 @@ function App() {
     
     const tempId = `APP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
-    // Call the AI service to get the status
-    const decision = await evaluateApplicationEligibility({
+    // Call the AI service to get the status and decision date
+    const { decision, decisionedDate } = await evaluateApplicationEligibility({
         id: tempId,
         employmentStartDate: appFormData.profileData.employmentStartDate,
         event: appFormData.eventData.event,
@@ -183,6 +186,9 @@ function App() {
       requestedAmount: appFormData.eventData.requestedAmount,
       submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
       status: decision,
+      decisionedDate: decisionedDate,
+      twelveMonthGrantMax: 10000, // Placeholder
+      lifetimeGrantMax: 50000,   // Placeholder
       shareStory: appFormData.agreementData.shareStory,
       receiveAdditionalInfo: appFormData.agreementData.receiveAdditionalInfo,
     };

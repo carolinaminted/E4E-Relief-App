@@ -59,6 +59,9 @@ export interface Application {
   // --- Metadata
   submittedDate: string;
   status: 'Submitted' | 'Awarded' | 'Declined';
+  decisionedDate: string;
+  twelveMonthGrantMax: number;
+  lifetimeGrantMax: number;
   // --- Agreements from final page
   shareStory: boolean;
   receiveAdditionalInfo: boolean;

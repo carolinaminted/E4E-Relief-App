@@ -119,7 +119,7 @@ export async function evaluateApplicationEligibility(
     event: string; 
     requestedAmount: number; 
   }
-): Promise<'Awarded' | 'Declined'> {
+): Promise<{ decision: 'Awarded' | 'Declined'; decisionedDate: string }> {
   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
   const prompt = `
@@ -144,16 +144,13 @@ export async function evaluateApplicationEligibility(
         model: 'gemini-2.5-flash',
         contents: prompt,
     });
-    const decision = response.text.trim();
-    if (decision === 'Awarded' || decision === 'Declined') {
-      return decision;
-    }
-    // Fallback if the model returns unexpected text
-    return 'Declined';
+    const decisionText = response.text.trim();
+    const decision = (decisionText === 'Awarded' || decisionText === 'Declined') ? decisionText : 'Declined';
+    return { decision, decisionedDate: today };
   } catch (error) {
     console.error("AI eligibility check failed:", error);
     // Default to a safe status in case of API error
-    return 'Declined';
+    return { decision: 'Declined', decisionedDate: today };
   }
 }
 
