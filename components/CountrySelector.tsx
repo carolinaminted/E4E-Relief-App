@@ -33,18 +33,36 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({ id, value, onUpdate, 
     onUpdate(country);
     setIsOpen(false);
   };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    if (!isOpen) setIsOpen(true);
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        // When clicking away, check if the current input is a valid option (case-insensitive).
+        // If it is, ensure the parent state is updated with the correctly cased version.
+        // If it's not, revert the input to the last valid value from the parent.
+        const foundCountry = countries.find(c => c.toLowerCase() === searchTerm.toLowerCase());
+        if (foundCountry) {
+            if (foundCountry !== value) {
+                onUpdate(foundCountry);
+            }
+            // also update the local state to have the correct casing
+            setSearchTerm(foundCountry);
+        } else {
+            setSearchTerm(value);
+        }
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [wrapperRef]);
+  }, [wrapperRef, searchTerm, value, onUpdate]);
   
   const baseInputClasses = "w-full text-white focus:outline-none focus:ring-0";
   const variantClasses = {
@@ -55,17 +73,13 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({ id, value, onUpdate, 
   return (
     <div className="relative" ref={wrapperRef}>
       <label htmlFor={id} className="block text-sm font-medium text-white mb-1">
-        Country {required && <span className="text-red-400">*</span>}
+        Location {required && <span className="text-red-400">*</span>}
       </label>
       <input
         id={id}
         type="text"
         value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          onUpdate(e.target.value); // Update form state on change to clear error
-          if (!isOpen) setIsOpen(true);
-        }}
+        onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
         className={`${baseInputClasses} ${variantClasses[variant]}`}
         autoComplete="off"

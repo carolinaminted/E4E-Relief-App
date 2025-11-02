@@ -34,13 +34,30 @@ const SearchableSelector: React.FC<SearchableSelectorProps> = ({ id, label, valu
     onUpdate(option);
     setIsOpen(false);
   };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    if (!isOpen) setIsOpen(true);
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-        // If the user clicks outside and the input doesn't match a valid option, reset it to the original value
-        if (!options.includes(searchTerm)) {
+        // When clicking away, check if the current input is a valid option (case-insensitive).
+        // If it is, ensure the parent state is updated with the correctly cased version.
+        // If it's not, revert the input to the last valid value from the parent.
+        const foundOption = options.find(option => option.toLowerCase() === searchTerm.toLowerCase());
+        if (foundOption) {
+            // A valid option was typed, possibly with different casing.
+            if (foundOption !== value) {
+                // Update parent with the correctly cased value from the options list.
+                onUpdate(foundOption);
+            }
+            // Also, update the local search term to reflect the correct casing.
+            setSearchTerm(foundOption);
+        } else {
+            // Revert to the last valid value from the parent if the typed text is not a match.
             setSearchTerm(value);
         }
       }
@@ -49,7 +66,7 @@ const SearchableSelector: React.FC<SearchableSelectorProps> = ({ id, label, valu
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [wrapperRef, searchTerm, value, options]);
+  }, [wrapperRef, searchTerm, value, options, onUpdate]);
   
   const baseInputClasses = "w-full text-white focus:outline-none focus:ring-0";
   const variantClasses = {
@@ -66,11 +83,7 @@ const SearchableSelector: React.FC<SearchableSelectorProps> = ({ id, label, valu
         id={id}
         type="text"
         value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          onUpdate(e.target.value); // Update form state on change to clear error
-          if (!isOpen) setIsOpen(true);
-        }}
+        onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
         className={`${baseInputClasses} ${variantClasses[variant]}`}
         autoComplete="off"

@@ -44,7 +44,7 @@ const AddressHelper: React.FC<AddressHelperProps> = ({ onAddressParsed, variant 
       <p className="text-xs text-gray-300 mb-2">
         Type or paste a full address below and let our AI fill in the fields for you.
       </p>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col md:flex-row gap-2">
         <textarea
           id="address-helper-input"
           value={addressInput}
@@ -58,7 +58,7 @@ const AddressHelper: React.FC<AddressHelperProps> = ({ onAddressParsed, variant 
           type="button"
           onClick={handleParse}
           disabled={isLoading || !addressInput.trim()}
-          className="bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 h-full disabled:bg-gray-500 disabled:cursor-wait min-w-[80px] flex items-center justify-center"
+          className="bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 disabled:bg-gray-500 disabled:cursor-wait min-w-[80px] flex items-center justify-center"
         >
           {isLoading ? (
             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

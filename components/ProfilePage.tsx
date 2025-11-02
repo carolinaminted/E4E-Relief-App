@@ -258,7 +258,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">My Applications</h2>
                 <ChevronIcon isOpen={isApplicationsOpen} />
             </button>
-            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isApplicationsOpen ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+            <div className={`transition-all duration-500 ease-in-out ${isApplicationsOpen ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="space-y-4 pt-4">
                 {applications.length > 0 ? (
                     applications.map(app => (
@@ -296,7 +296,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 </div>
                 <ChevronIcon isOpen={openSections.contact} />
             </button>
-            <div id="contact-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.contact ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+            <div id="contact-section" className={`transition-all duration-500 ease-in-out ${openSections.contact ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                     <FormInput label="First Name" id="firstName" required value={formData.firstName} onChange={e => handleFormChange('firstName', e.target.value)} error={errors.firstName} />
                     <FormInput label="Middle Name(s)" id="middleName" value={formData.middleName || ''} onChange={e => handleFormChange('middleName', e.target.value)} />
@@ -317,7 +317,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 </div>
                 <ChevronIcon isOpen={openSections.primaryAddress} />
             </button>
-            <div id="address-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.primaryAddress ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+            <div id="address-section" className={`transition-all duration-500 ease-in-out ${openSections.primaryAddress ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="space-y-6 pt-4">
                     <AddressFields address={formData.primaryAddress} onUpdate={(field, value) => handleAddressChange('primaryAddress', field, value)} onBulkUpdate={(parsed) => handleAddressBulkChange('primaryAddress', parsed)} prefix="primary" errors={errors.primaryAddress || {}} />
                 </div>
@@ -333,7 +333,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 </div>
                 <ChevronIcon isOpen={openSections.additionalDetails} />
             </button>
-            <div id="details-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.additionalDetails ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+            <div id="details-section" className={`transition-all duration-500 ease-in-out ${openSections.additionalDetails ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                     <FormInput type="date" label="Employment Start Date" id="employmentStartDate" required value={formData.employmentStartDate} onChange={e => handleFormChange('employmentStartDate', e.target.value)} error={errors.employmentStartDate} />
                     <SearchableSelector
@@ -370,7 +370,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 </div>
                 <ChevronIcon isOpen={openSections.mailingAddress} />
             </button>
-            <div id="mailing-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.mailingAddress ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+            <div id="mailing-section" className={`transition-all duration-500 ease-in-out ${openSections.mailingAddress ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="space-y-4 pt-4">
                     <FormRadioGroup legend="Mailing Address Same as Primary?" name="isMailingAddressSame" options={['Yes', 'No']} value={formData.isMailingAddressSame ? 'Yes' : 'No'} onChange={value => handleFormChange('isMailingAddressSame', value === 'Yes')} />
                     {!formData.isMailingAddressSame && (
@@ -391,7 +391,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 </div>
                 <ChevronIcon isOpen={openSections.consent} />
             </button>
-            <div id="consent-section" className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.consent ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+            <div id="consent-section" className={`transition-all duration-500 ease-in-out ${openSections.consent ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="space-y-3 pt-4">
                      {errors.ackPolicies && <p className="text-red-400 text-xs">{errors.ackPolicies}</p>}
                     <div className="flex items-start">
