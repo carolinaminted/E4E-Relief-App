@@ -5,12 +5,26 @@
 - Choose **Register** to create an account or **Sign in** if you already have one.
 - After signing in, the **Home** screen shows tiles for the main actions.
 
+Login Page:
+
+<img width="334" height="602" alt="image" src="https://github.com/user-attachments/assets/61007eb0-e080-421d-865e-32cd926a243f" />
+
+Registration Page:
+
+<img width="334" height="604" alt="image" src="https://github.com/user-attachments/assets/639aab15-e872-4842-9a89-0528af5150a6" />
+
+
 ## Home
 - **Apply for Relief**: start a new application.
 - **My Applications**: view status of past submissions.
-- **Profile**: update your personal details and address.
+- **Profile**: update your personal details, address, and consent acknowledgements.
 - **Support**: read help content and ways to contact support.
-- The **Help Chat** icon opens the assistant for quick questions.
+- The **Relief Assistant** icon opens the AI assistant for quick questions, filling out applications, and updating contact information.
+
+Home Page:
+
+<img width="339" height="609" alt="image" src="https://github.com/user-attachments/assets/8815c8c7-5d81-491a-a9f9-b2d04318b417" />
+
 
 ## Apply for Relief
 The application is a guided, step‑by‑step form. Your progress is saved in the session.
@@ -35,25 +49,41 @@ The application is a guided, step‑by‑step form. Your progress is saved in th
    - You will see a **Submission Success** page.
    - Your application will appear in **My Applications** with a status.
 
-## My Applications
+Apply for Relief Page:
+
+<img width="340" height="610" alt="image" src="https://github.com/user-attachments/assets/f42bec46-6b37-4197-9758-6d21eedf51c2" />
+
+
+## My Applications Page
 - View a list of all your submissions with status (Submitted, Awarded, Declined).
 - Select an entry to open a **detail view** showing what you submitted.
 - Use this area to confirm what the organization received.
 
-## Profile
+<img width="324" height="615" alt="image" src="https://github.com/user-attachments/assets/a19f966e-301d-4dcb-9e51-32f5097a6228" />
+
+
+## Profile Page
 - Update name, preferred language, and contact details.
 - Edit your addresses. The **Country** picker supports searching.
 - Save to keep changes for your current session.
 
-## Support
+
+## Support Page
 - Read guidance on eligibility, timelines, and contact options.
 - This page is a placeholder and can be replaced with your organization’s content and links.
 
-## Help Chat (AI Assistant)
+<img width="342" height="617" alt="image" src="https://github.com/user-attachments/assets/450f1dd3-a0be-476c-b892-8c7346f8381b" />
+
+
+## Relief Assistant (AI Assistant)
 - Open the chat from the floating widget.
 - Ask “how do I…” questions about the process.
 - The assistant can perform a simple **eligibility check** and explain the result.
-- Responses are for guidance only in this demo.
+- Responses are for guidance of the program.
+- Provide information to prefillout application information.
+
+<img width="335" height="609" alt="image" src="https://github.com/user-attachments/assets/a8f64df1-c745-4cc7-8ef9-8a19945415c7" />
+
 
 ## Tips
 - This demo does not persist data across refreshes.
