@@ -252,6 +252,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
     <div className="p-8 max-w-4xl mx-auto">
       <button onClick={() => navigate('home')} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 mb-6">&larr; Back to Home</button>
       
+      <h1 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] text-center">Profile</h1>
+
       {/* Applications Section */}
         <section className="border-b border-[#005ca0] pb-4 mb-4">
             <button type="button" onClick={() => setIsApplicationsOpen(p => !p)} className="w-full flex justify-between items-center text-left py-2" aria-expanded={isApplicationsOpen}>

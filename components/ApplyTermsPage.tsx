@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import TermsModal from './TermsModal';
-import type { ApplicationFormData } from './ApplyPage';
+// FIX: Corrected the import path for ApplicationFormData. It should be imported from '../types' instead of a component file.
+import type { ApplicationFormData } from '../types';
 
 interface ApplyTermsPageProps {
   formData: ApplicationFormData['agreementData'];

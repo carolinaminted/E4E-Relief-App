@@ -1,23 +1,11 @@
 import React, { useState } from 'react';
-import type { Application, UserProfile } from '../types';
+import type { Application, UserProfile, ApplicationFormData } from '../types';
 
 // Import step components
 import ApplyContactPage from './ApplyContactPage';
 import ApplyEventPage from './ApplyEventPage';
 import ApplyExpensesPage from './ApplyExpensesPage';
 import ApplyTermsPage from './ApplyTermsPage';
-
-export interface ApplicationFormData {
-  profileData: UserProfile;
-  eventData: {
-    event: string;
-    requestedAmount: number;
-  };
-  agreementData: {
-    shareStory: boolean;
-    receiveAdditionalInfo: boolean;
-  };
-}
 
 interface ApplyPageProps {
   navigate: (page: 'home' | 'profile') => void;
@@ -88,6 +76,34 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile, 
       }));
   };
   
+  const handleAIParsedData = (parsedData: Partial<ApplicationFormData>) => {
+    setFormData(prev => {
+        const newProfileData = parsedData.profileData ? {
+            ...prev.profileData,
+            ...parsedData.profileData,
+            primaryAddress: {
+                ...prev.profileData.primaryAddress,
+                ...(parsedData.profileData.primaryAddress || {}),
+            },
+            mailingAddress: {
+                ...(prev.profileData.mailingAddress || { country: '', street1: '', city: '', state: '', zip: '' }),
+                ...(parsedData.profileData.mailingAddress || {}),
+            },
+        } : prev.profileData;
+
+        const newEventData = parsedData.eventData ? {
+            ...prev.eventData,
+            ...parsedData.eventData,
+        } : prev.eventData;
+
+        return {
+            ...prev,
+            profileData: newProfileData,
+            eventData: newEventData,
+        };
+    });
+  };
+  
   const handleFinalSubmit = async () => {
     await onSubmit(formData);
   };
@@ -95,7 +111,12 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile, 
   const renderStep = () => {
       switch(step) {
           case 1:
-              return <ApplyContactPage formData={formData.profileData} updateFormData={updateProfileData} nextStep={nextStep} />;
+              return <ApplyContactPage 
+                formData={formData.profileData} 
+                updateFormData={updateProfileData} 
+                nextStep={nextStep}
+                onAIParsed={handleAIParsedData}
+                />;
           case 2:
               return <ApplyEventPage formData={formData.eventData} updateFormData={updateEventData} nextStep={nextStep} prevStep={prevStep} />;
           case 3:

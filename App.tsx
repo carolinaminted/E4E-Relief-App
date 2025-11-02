@@ -1,8 +1,10 @@
 
+
 import React, { useState, useCallback, useMemo } from 'react';
 import type { UserProfile, Application } from './types';
 import { evaluateApplicationEligibility } from './services/geminiService';
-import type { ApplicationFormData } from './components/ApplyPage';
+// FIX: Corrected the import path for ApplicationFormData. It should be imported from './types' instead of a component file.
+import type { ApplicationFormData } from './types';
 
 // Page Components
 import LoginPage from './components/LoginPage';
