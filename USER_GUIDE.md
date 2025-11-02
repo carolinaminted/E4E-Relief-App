@@ -85,6 +85,76 @@ Apply for Relief Page:
 <img width="335" height="609" alt="image" src="https://github.com/user-attachments/assets/a8f64df1-c745-4cc7-8ef9-8a19945415c7" />
 
 
+## AI Decisioning and Instant Grant Eligibility
+
+When a user completes the **Apply for Relief** form and clicks **Submit**, the application triggers the **AI Decisioning Service**.  
+This service evaluates the applicant’s data against fund-specific eligibility rules and renders a decision in real time.
+
+### Flow Overview
+1. **Form Submission**
+   - The user’s completed application (contact, event, expenses, acknowledgments) is serialized into a structured payload.
+   - This payload includes user metadata and contextual fund information.
+
+2. **AI Eligibility Evaluation**
+   - The payload is passed to the AI Decisioning module (`geminiService.ts` or equivalent).
+   - The module constructs a structured request aligned with the **eligibility evaluation schema**:
+     ```ts
+     {
+       "tool": "EligibilityEvaluation",
+       "input": {
+         "fund_id": "<fund-uuid>",
+         "country": "US",
+         "event_type": "Hurricane",
+         "requested_amount": 1200,
+         "time_since_event": "5 days",
+         "prior_awards": 0
+       }
+     }
+     ```
+   - The AI model (e.g., Gemini or GPT) uses fund policy rules and prior case patterns to assess:
+     - Applicant eligibility (yes/no + reasoning)
+     - Decision type (approve, deny, review)
+     - Suggested grant amount (if approved)
+     - Policy rationale (text summary for auditing)
+
+3. **Decision Output**
+   - The AI returns a structured JSON response:
+     ```json
+     {
+       "eligible": true,
+       "decision": "Approved",
+       "recommended_award": 1000,
+       "reasoning": "Applicant meets criteria and has no prior awards."
+     }
+     ```
+   - The UI displays an instant confirmation banner summarizing the result.
+   - The result is logged with the application record for auditing.
+
+4. **Post-Decision Handling**
+   - If approved: the app can initiate a **payment creation** record in Dynamics 365 via API.
+   - If pending review: it flags the record for manual approval by case workers.
+   - If denied: it provides a clear explanation to the applicant, referencing relevant criteria.
+
+  
+<img width="333" height="615" alt="image" src="https://github.com/user-attachments/assets/a323002c-28b4-4495-bb27-7b2afc24c162" />
+
+
+<img width="324" height="611" alt="image" src="https://github.com/user-attachments/assets/e5fca3f2-3c6c-4d52-8576-9a69efa6412a" />
+
+
+### Key Advantages
+- **Instant Eligibility Feedback** — applicants know their outcome immediately.
+- **Consistent Rule Enforcement** — AI applies the same logic for all applicants.
+- **Transparent Reasoning** — every decision carries human-readable justification.
+- **Audit Ready** — results are logged for compliance and reporting.
+
+### Next Step for Integration
+Replace the in-app mock AI call with your **Azure Function endpoint** that wraps OpenAI or Gemini logic.  
+This enables real-time eligibility and award decisioning while maintaining full traceability inside Dynamics 365.
+
+
+
+
 ## Tips
 - This demo does not persist data across refreshes.
 - If you see “missing API key,” add your AI key via the environment file.
