@@ -159,12 +159,12 @@ export async function evaluateApplicationEligibility(
 const addressJsonSchema = {
     type: Type.OBJECT,
     properties: {
-        street1: { type: Type.STRING, description: "The primary street line, including street number and name." },
-        street2: { type: Type.STRING, description: "The secondary street line (e.g., apartment, suite, or unit number)." },
-        city: { type: Type.STRING, description: "The city." },
-        state: { type: Type.STRING, description: "The state, province, or region, preferably as a 2-letter abbreviation if applicable (e.g., CA for California)." },
+        street1: { type: Type.STRING, description: "The primary street line, including street number and name. Formatted in Title Case (e.g., '123 Main St')." },
+        street2: { type: Type.STRING, description: "The secondary street line (e.g., apartment, suite, or unit number). Formatted in Title Case (e.g., 'Apt 4B')." },
+        city: { type: Type.STRING, description: "The city, formatted in Title Case (e.g., 'New York')." },
+        state: { type: Type.STRING, description: "The state or province. For US addresses, use the uppercase 2-letter abbreviation (e.g., 'CA')." },
         zip: { type: Type.STRING, description: "The ZIP or postal code." },
-        country: { type: Type.STRING, description: "The country." },
+        country: { type: Type.STRING, description: "The country, formatted in Title Case (e.g., 'United States')." },
     },
     required: ["street1", "city", "state", "zip", "country"]
 };
@@ -173,9 +173,13 @@ export async function parseAddressWithGemini(addressString: string): Promise<Par
   if (!addressString) return {};
 
   const prompt = `
-    Parse the following address string into a structured JSON object.
-    - If a component isn't present, omit it from the JSON.
-    - For the 'state', use the 2-letter abbreviation if it's a US address.
+    Parse the provided address string into a structured JSON object.
+    Rules:
+    1. For addresses in the United States, validate and correct any misspellings in the street name, city, or state.
+    2. Standardize capitalization:
+       - Street names and city should be in Title Case (e.g., "Main Street", "San Francisco").
+       - The state for US addresses must be a 2-letter uppercase abbreviation (e.g., "CA").
+    3. Omit any keys for address components that are not present in the original string (like \`street2\`).
     
     Address to parse: "${addressString}"
   `;
@@ -193,7 +197,6 @@ export async function parseAddressWithGemini(addressString: string): Promise<Par
     const jsonString = response.text.trim();
     if (jsonString) {
       const parsed = JSON.parse(jsonString);
-      // The user might have just typed a city and state, so we might get back country=null
       // Filter out null values before returning
       Object.keys(parsed).forEach(key => {
         if (parsed[key] === null) {

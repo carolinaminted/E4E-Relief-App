@@ -38,9 +38,6 @@ const AddressHelper: React.FC<AddressHelperProps> = ({ onAddressParsed, variant 
 
   return (
     <div className="bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0] mb-4">
-      <label htmlFor="address-helper-input" className="block text-sm font-medium text-white mb-2">
-        ✨ Smart Address Entry
-      </label>
       <p className="text-xs text-gray-300 mb-2">
         Type or paste a full address below and let our AI fill in the fields for you.
       </p>
@@ -66,7 +63,7 @@ const AddressHelper: React.FC<AddressHelperProps> = ({ onAddressParsed, variant 
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           ) : (
-             "Parse"
+             "Submit"
           )}
         </button>
       </div>
