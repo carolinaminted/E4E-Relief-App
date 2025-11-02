@@ -1,60 +1,195 @@
-# E4E Relief App - User Guide
+# E4E Relief — User Guide
 
-Welcome to the E4E Relief App! This guide will walk you through the key features of the application and help you get the assistance you need quickly and efficiently.
+## Getting started
+- Open the app in your browser.
+- Choose **Register** to create an account or **Sign in** if you already have one.
+- After signing in, the **Home** screen shows tiles for the main actions.
 
-## 1. Getting Started
+<img width="334" height="602" alt="image" src="https://github.com/user-attachments/assets/61007eb0-e080-421d-865e-32cd926a243f" />
+<img width="334" height="604" alt="image" src="https://github.com/user-attachments/assets/639aab15-e872-4842-9a89-0528af5150a6" />
 
-### Registration
-If you are a new user, you will need to register for an account.
-- From the login screen, click "Sign Up".
-- Fill in your First Name, Last Name, Email, and create a Password.
-- Click "Sign Up" to create your account. You will be automatically logged in.
 
-### Login
-If you already have an account:
-- Enter your registered email and password on the login screen.
-- Click "Sign In".
+## Home
+- **Apply for Relief**: start a new application.
+- **My Applications**: view status of past submissions.
+- **Profile**: update your personal details, address, and consent acknowledgements.
+- **Support**: read help content and ways to contact support.
+- The **Relief Assistant** icon opens the AI assistant for quick questions, filling out applications, and updating contact information.
 
-## 2. The Home Page
-After logging in, you'll land on the Home Page. This is your main dashboard where you can easily navigate to the app's primary functions:
-- **Apply for Relief**: Start a new application for financial assistance.
-- **My Profile**: View your application history and manage your contact information.
-- **Get Support**: Find contact information for help.
+Home Page:
 
-## 3. Applying for Relief
-The application process is designed to be straightforward.
+<img width="339" height="609" alt="image" src="https://github.com/user-attachments/assets/8815c8c7-5d81-491a-a9f9-b2d04318b417" />
 
-### Step 1: Contact & Personal Details
-- **AI Application Starter**: To speed things up, you can describe your situation in your own words. Our AI will parse the text and pre-fill relevant parts of your application, such as your address, event type, and requested amount.
-- **Manual Entry**: You can fill out all the fields manually. The form is organized into collapsible sections for contact information, address, and other personal details. Required fields are marked with a red asterisk.
-- **AI Address Helper**: In the address sections, you can type or paste a full address, and our AI will automatically parse it into the correct fields (Street, City, State, etc.).
 
-### Step 2: Event Details
-- Select the type of event you were affected by (e.g., Flood, Wildfire).
-- Enter the amount of financial assistance you are requesting.
+## Apply for Relief
+The application is a guided, step‑by‑step form. Your progress is saved in the session.
 
-### Step 3: Expenses
-This section will outline the eligible expenses based on your event. (This is a simplified view for now).
+1. **Contact & Address**
+   - Enter your name, email, phone, and residential address.
+   - Use the **Country** picker to quickly filter and select your country.
+   - Address tips are available via the helper component.
 
-### Step 4: Agreements & Submission
-- Review the agreements.
-- Read and accept the **Terms of Acceptance**. You must view the terms before you can agree.
-- Click **Submit Application**.
+2. **Event & Request**
+   - Select the event type and describe the impact.
+   - Enter the **requested amount** you need assistance with.
 
-After submission, you will see a confirmation screen with your new Application ID.
+3. **Expenses**
+   - Provide estimated costs or categories. Totals are shown where applicable.
 
-## 4. Managing Your Profile
-The Profile page is your central hub for managing your personal information and tracking your applications.
+4. **Terms & Acknowledgments**
+   - Read and accept required terms.
+   - Optional choices: share your story and receive additional information.
 
-- **My Applications**: View a list of all your submitted applications with their current status (e.g., Submitted, Awarded, Declined). Click on an application to see more details.
-- **Profile Information**: All your personal details are organized in collapsible sections. You can update your contact info, addresses, and other details here. Click **Save Changes** at the bottom when you're done.
+5. **Submit**
+   - You will see a **Submission Success** page.
+   - Your application will appear in **My Applications** with a status.
 
-## 5. Using the Relief Assistant (Chatbot)
-For quick help, use the AI-powered Relief Assistant.
+Apply for Relief Page:
 
-- **Open the Chat**: Click the chat icon at the bottom-left corner of the screen.
-- **Ask Questions**: Ask about the application process, where to find information, or how to get support.
-- **Start or Update Your Application**: The assistant can help you fill out your application. For example, you can say, "I live at 123 Main St in Anytown and was affected by the flood. I need $1500." The assistant will use this information to create or update a draft, which you can then complete on the 'Apply' page.
+<img width="340" height="610" alt="image" src="https://github.com/user-attachments/assets/f42bec46-6b37-4197-9758-6d21eedf51c2" />
 
-## 6. Getting Support
-If you need to contact a support representative, navigate to the **Support** page from the Home screen. Here you will find the support email and phone number.
+
+## My Applications Page
+- View a list of all your submissions with status (Submitted, Awarded, Declined).
+- Select an entry to open a **detail view** showing what you submitted.
+- Use this area to confirm what the organization received.
+
+<img width="324" height="615" alt="image" src="https://github.com/user-attachments/assets/a19f966e-301d-4dcb-9e51-32f5097a6228" />
+
+
+## Profile Page
+- Update name, preferred language, and contact details.
+- Edit your addresses. The **Country** picker supports searching.
+- Save to keep changes for your current session.
+
+
+## Support Page
+- Read guidance on eligibility, timelines, and contact options.
+- This page is a placeholder and can be replaced with your organization’s content and links.
+
+<img width="342" height="617" alt="image" src="https://github.com/user-attachments/assets/450f1dd3-a0be-476c-b892-8c7346f8381b" />
+
+
+## Relief Assistant (AI Assistant)
+- Open the chat from the floating widget.
+- Ask “how do I…” questions about the process.
+- The assistant can perform a simple **eligibility check** and explain the result.
+- Responses are for guidance of the program.
+- Provide information to prefillout application information.
+
+<img width="335" height="609" alt="image" src="https://github.com/user-attachments/assets/a8f64df1-c745-4cc7-8ef9-8a19945415c7" />
+
+
+## AI Decisioning and Instant Grant Eligibility
+
+When a user completes the **Apply for Relief** form and clicks **Submit**, the application triggers the **AI Decisioning Service**.  
+This service evaluates the applicant’s data against fund-specific eligibility rules and renders a decision in real time.
+
+### Flow Overview
+1. **Form Submission**
+   - The user’s completed application (contact, event, expenses, acknowledgments) is serialized into a structured payload.
+   - This payload includes user metadata and contextual fund information.
+
+2. **AI Eligibility Evaluation**
+   - The payload is passed to the AI Decisioning module (`geminiService.ts` or equivalent).
+   - The module constructs a structured request aligned with the **eligibility evaluation schema**:
+     ```ts
+     {
+       "tool": "EligibilityEvaluation",
+       "input": {
+         "fund_id": "<fund-uuid>",
+         "country": "US",
+         "event_type": "Hurricane",
+         "requested_amount": 1200,
+         "time_since_event": "5 days",
+         "prior_awards": 0
+       }
+     }
+     ```
+   - The AI model (e.g., Gemini or GPT) uses fund policy rules and prior case patterns to assess:
+     - Applicant eligibility (yes/no + reasoning)
+     - Decision type (approve, deny, review)
+     - Suggested grant amount (if approved)
+     - Policy rationale (text summary for auditing)
+
+3. **Decision Output**
+   - The AI returns a structured JSON response:
+     ```json
+     {
+       "eligible": true,
+       "decision": "Approved",
+       "recommended_award": 1000,
+       "reasoning": "Applicant meets criteria and has no prior awards."
+     }
+     ```
+   - The UI displays an instant confirmation banner summarizing the result.
+   - The result is logged with the application record for auditing.
+
+4. **Post-Decision Handling**
+   - If approved: the app can initiate a **payment creation** record in Dynamics 365 via API.
+   - If pending review: it flags the record for manual approval by case workers.
+   - If denied: it provides a clear explanation to the applicant, referencing relevant criteria.
+
+  
+<img width="333" height="615" alt="image" src="https://github.com/user-attachments/assets/a323002c-28b4-4495-bb27-7b2afc24c162" />
+<img width="339" height="605" alt="image" src="https://github.com/user-attachments/assets/0361b00d-7d99-4189-8b49-03d7536d389c" />
+<img width="324" height="611" alt="image" src="https://github.com/user-attachments/assets/e5fca3f2-3c6c-4d52-8576-9a69efa6412a" />
+
+
+### Key Advantages
+- **Instant Eligibility Feedback** — applicants know their outcome immediately.
+- **Consistent Rule Enforcement** — AI applies the same logic for all applicants.
+- **Transparent Reasoning** — every decision carries human-readable justification.
+- **Audit Ready** — results are logged for compliance and reporting.
+
+
+# Integration Overview — Azure AD B2C + Dataverse
+
+## High-Level Plan
+
+1. **Authentication**
+   - Use **Azure AD B2C** with **OIDC + PKCE** for secure sign-in and sign-up.
+   - Each B2C user is mapped to a **Dataverse Contact** by storing the B2C `oid` (Object ID) on the Contact record.
+
+2. **Backend API Layer**
+   - Introduce a **thin backend API** (Azure Function or App Service) as the single integration point between the mobile app and Dataverse.
+   - This API validates B2C access tokens, executes business logic, and prevents client-side exposure of secrets.
+
+3. **Token Flow**
+   - **Frontend → API**: Authenticated using **B2C access tokens**.
+   - **API → Dataverse**: Authenticated using a **Dataverse Application User** (via Azure AD app registration with client credentials).
+
+4. **Data Integration**
+   - Replace all mock or local state with **live Dataverse data**:
+     - **Contacts** for user profiles.
+     - **Applications** for relief submissions.
+     - **Awards** for grant outcomes.
+   - Use **TanStack Query** to manage cache, sync, and optimistic updates.
+
+5. **AI Decisioning**
+   - Run **AI eligibility and grant decisioning** server-side within the API before saving an Application.
+   - Store decision outcome, reasoning, and audit trail directly in Dataverse.
+
+6. **Security & Configuration**
+   - Store tokens securely in **Keychain/Keystore**.
+   - Keep environment variables and API endpoints in a **.env file**.
+   - Avoid embedding secrets in mobile code.
+   - Enforce **least-privilege roles** and **data access controls** in Dataverse.
+
+7. **Deployment & CI/CD**
+   - Implement automated build and release pipelines to:
+     - Build and deploy the React Native app.
+     - Deploy the API to Azure.
+     - Run integration and regression tests against a **UAT Dataverse** environment.
+
+8. **Observability & Reliability**
+   - Add **structured logs**, **correlation IDs**, and **error telemetry**.
+   - AI decision logs with updates on cases with artifacts used to make the eligibility award or decline decision
+   - Provide **user-friendly error messages** for predictable recovery and smoother UX.
+
+
+
+## Tips
+- This demo does not persist data across refreshes.
+- If you see “missing API key,” add your AI key via the environment file.
+- Keep your browser tab open during an application session to avoid losing inputs.
