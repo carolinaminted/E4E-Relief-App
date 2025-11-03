@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import type { UserProfile, Address, ApplicationFormData } from '../types';
 import CountrySelector from './CountrySelector';
@@ -7,6 +8,8 @@ import { employmentTypes, languages } from '../data/appData';
 import { formatPhoneNumber } from '../utils/formatting';
 import AIApplicationStarter from './AIApplicationStarter';
 import RequiredIndicator from './RequiredIndicator';
+import LoadingOverlay from './LoadingOverlay';
+import { parseApplicationDetailsWithGemini } from '../services/geminiService';
 
 interface ApplyContactPageProps {
   formData: UserProfile;
@@ -85,6 +88,7 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
     mailingAddress: false,
     consent: false,
   });
+  const [isAIParsing, setIsAIParsing] = useState(false);
 
   const sectionHasErrors = useMemo(() => {
     // Contact
@@ -165,6 +169,20 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
     }
   };
   
+  const handleAIParse = async (description: string) => {
+    setIsAIParsing(true);
+    try {
+      const parsedDetails = await parseApplicationDetailsWithGemini(description);
+      onAIParsed(parsedDetails);
+    } catch (e) {
+      console.error("AI Parsing failed in parent component:", e);
+      // Re-throw the error so the child component can catch it and display a local error message.
+      throw e;
+    } finally {
+      setIsAIParsing(false);
+    }
+  };
+
   const validate = (): boolean => {
     const newErrors: Record<string, any> = {};
     const sectionsToOpen: Partial<Record<keyof typeof openSections, boolean>> = {};
@@ -234,6 +252,7 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
 
   return (
     <div className="space-y-4">
+        {isAIParsing && <LoadingOverlay message="We are applying your details to the application now..." />}
 
         {/* AI Application Starter Section */}
         <fieldset className="border-b border-[#005ca0] pb-4">
@@ -245,7 +264,11 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
             </button>
             <div id="ai-starter-section" className={`transition-all duration-500 ease-in-out ${openSections.aiStarter ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="pt-4">
-                    <AIApplicationStarter onDetailsParsed={onAIParsed} variant="underline" />
+                    <AIApplicationStarter 
+                        onParse={handleAIParse}
+                        isLoading={isAIParsing}
+                        variant="underline"
+                    />
                 </div>
                 {openSections.aiStarter && (
                     <div className="flex justify-end pt-4">

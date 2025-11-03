@@ -1,16 +1,15 @@
 
 import React, { useState } from 'react';
-import { parseApplicationDetailsWithGemini } from '../services/geminiService';
 import type { ApplicationFormData } from '../types';
 
 interface AIApplicationStarterProps {
-  onDetailsParsed: (parsedDetails: Partial<ApplicationFormData>) => void;
+  onParse: (description: string) => Promise<void>;
+  isLoading: boolean;
   variant?: 'boxed' | 'underline';
 }
 
-const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onDetailsParsed, variant = 'boxed' }) => {
+const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onParse, isLoading, variant = 'boxed' }) => {
   const [descriptionInput, setDescriptionInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -19,20 +18,16 @@ const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onDetailsPa
       setError('Please describe your situation to get started.');
       return;
     }
-    setIsLoading(true);
     setError('');
     setIsSuccess(false);
     try {
-      const parsedDetails = await parseApplicationDetailsWithGemini(descriptionInput);
-      onDetailsParsed(parsedDetails);
+      await onParse(descriptionInput);
       setDescriptionInput(''); 
       setIsSuccess(true);
       setTimeout(() => setIsSuccess(false), 5000); // Clear after 5 seconds
     } catch (e) {
-      console.error("Failed to parse application details:", e);
+      console.error("AIApplicationStarter caught error during parse:", e);
       setError('Could not extract details. Please try again or fill fields manually.');
-    } finally {
-      setIsLoading(false);
     }
   };
   
