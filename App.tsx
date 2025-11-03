@@ -61,8 +61,8 @@ const initialApplications: Record<string, Application[]> = {
       submittedDate: '2023-08-12',
       status: 'Awarded',
       decisionedDate: '2023-08-12',
-      twelveMonthGrantMax: 10000,
-      lifetimeGrantMax: 50000,
+      twelveMonthGrantRemaining: 7500,
+      lifetimeGrantRemaining: 47500,
       shareStory: true,
       receiveAdditionalInfo: false,
     },
@@ -170,12 +170,24 @@ function App() {
     
     const tempId = `APP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
-    // Call the AI service to get the status and decision date
-    const { decision, decisionedDate } = await evaluateApplicationEligibility({
+    // Determine current grant remaining amounts from the last application or defaults
+    const usersPastApplications = applications[currentUser.email] || [];
+    const lastApplication = usersPastApplications.length > 0 ? usersPastApplications[usersPastApplications.length - 1] : null;
+    
+    const initialTwelveMonthMax = 10000;
+    const initialLifetimeMax = 50000;
+
+    const currentTwelveMonthRemaining = lastApplication ? lastApplication.twelveMonthGrantRemaining : initialTwelveMonthMax;
+    const currentLifetimeRemaining = lastApplication ? lastApplication.lifetimeGrantRemaining : initialLifetimeMax;
+
+    // Call the AI service to get the status, decision date, and new grant remaining amounts
+    const { decision, decisionedDate, newTwelveMonthRemaining, newLifetimeRemaining } = await evaluateApplicationEligibility({
         id: tempId,
         employmentStartDate: appFormData.profileData.employmentStartDate,
         event: appFormData.eventData.event,
         requestedAmount: appFormData.eventData.requestedAmount,
+        currentTwelveMonthRemaining: currentTwelveMonthRemaining,
+        currentLifetimeRemaining: currentLifetimeRemaining,
     });
 
     const newApplication: Application = {
@@ -186,10 +198,10 @@ function App() {
       submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
       status: decision,
       decisionedDate: decisionedDate,
-      twelveMonthGrantMax: 10000, // Placeholder
-      lifetimeGrantMax: 50000,   // Placeholder
-      shareStory: appFormData.agreementData.shareStory,
-      receiveAdditionalInfo: appFormData.agreementData.receiveAdditionalInfo,
+      twelveMonthGrantRemaining: newTwelveMonthRemaining,
+      lifetimeGrantRemaining: newLifetimeRemaining,
+      shareStory: appFormData.agreementData.shareStory ?? false,
+      receiveAdditionalInfo: appFormData.agreementData.receiveAdditionalInfo ?? false,
     };
 
     setApplications(prev => ({
@@ -206,7 +218,7 @@ function App() {
     setLastSubmittedApp(newApplication);
     setPage('submissionSuccess');
 
-  }, [currentUser, handleProfileUpdate]);
+  }, [currentUser, handleProfileUpdate, applications]);
   
   const handleChatbotAction = useCallback((functionName: string, args: any) => {
     console.log(`Executing tool: ${functionName}`, args);

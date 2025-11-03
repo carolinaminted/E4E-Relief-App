@@ -117,40 +117,78 @@ export async function evaluateApplicationEligibility(
     id: string; 
     employmentStartDate: string; 
     event: string; 
-    requestedAmount: number; 
+    requestedAmount: number;
+    currentTwelveMonthRemaining: number;
+    currentLifetimeRemaining: number;
   }
-): Promise<{ decision: 'Awarded' | 'Declined'; decisionedDate: string }> {
+): Promise<{ 
+    decision: 'Awarded' | 'Declined'; 
+    decisionedDate: string;
+    newTwelveMonthRemaining: number;
+    newLifetimeRemaining: number;
+}> {
   const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
+  const eligibilityDecisionSchema = {
+    type: Type.OBJECT,
+    properties: {
+        decision: { type: Type.STRING, enum: ['Awarded', 'Declined'] },
+        newTwelveMonthRemaining: { type: Type.NUMBER, description: "The updated 12-month grant amount remaining." },
+        newLifetimeRemaining: { type: Type.NUMBER, description: "The updated lifetime grant amount remaining." }
+    },
+    required: ["decision", "newTwelveMonthRemaining", "newLifetimeRemaining"]
+  };
+
   const prompt = `
-    Analyze the following application details based on the strict eligibility rules and return only a single word: "Awarded" or "Declined". Do not provide any other text or explanation.
+    Analyze the following application details based on the strict eligibility rules and return a JSON object with the decision and updated remaining grant amounts.
 
     **Eligibility Rules:**
     1. Event: Must be exactly "Tornado" or "Flood".
     2. Employment Start Date: Must be a date on or before today's date (${today}).
-    3. Requested Amount: Must be less than or equal to 10000.
+    3. Requested Amount: Must be less than or equal to the current 12 Month Remaining amount (${appData.currentTwelveMonthRemaining}).
+    4. Requested Amount: Must be less than or equal to 10000.
+
+    **Remaining Grant Amount Update Rules:**
+    - If the decision is "Awarded", calculate the new remaining amounts by subtracting the 'Requested Amount' from the current remaining amounts.
+    - If the decision is "Declined", the new remaining amounts should be the same as the current remaining amounts.
 
     **Applicant Details:**
     - Application ID: ${appData.id}
     - Employment Start Date: ${appData.employmentStartDate}
     - Event: ${appData.event}
     - Requested Amount: ${appData.requestedAmount}
-
-    **Decision:**
+    - Current 12 Month Remaining: ${appData.currentTwelveMonthRemaining}
+    - Current Lifetime Remaining: ${appData.currentLifetimeRemaining}
   `;
 
   try {
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: eligibilityDecisionSchema,
+        },
     });
-    const decisionText = response.text.trim();
-    const decision = (decisionText === 'Awarded' || decisionText === 'Declined') ? decisionText : 'Declined';
-    return { decision, decisionedDate: today };
+    
+    const result = JSON.parse(response.text.trim());
+
+    return { 
+        decision: result.decision, 
+        decisionedDate: today,
+        newTwelveMonthRemaining: result.newTwelveMonthRemaining,
+        newLifetimeRemaining: result.newLifetimeRemaining
+    };
+
   } catch (error) {
     console.error("AI eligibility check failed:", error);
     // Default to a safe status in case of API error
-    return { decision: 'Declined', decisionedDate: today };
+    return { 
+        decision: 'Declined', 
+        decisionedDate: today,
+        newTwelveMonthRemaining: appData.currentTwelveMonthRemaining,
+        newLifetimeRemaining: appData.currentLifetimeRemaining
+    };
   }
 }
 

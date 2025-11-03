@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import type { ApplicationFormData } from '../types';
 import SearchableSelector from './SearchableSelector';
 import { eventTypes } from '../data/appData';
+import RequiredIndicator from './RequiredIndicator';
 
 interface ApplyEventPageProps {
   formData: ApplicationFormData['eventData'];
@@ -56,7 +57,10 @@ const ApplyEventPage: React.FC<ApplyEventPageProps> = ({ formData, updateFormDat
             error={errors.event}
         />
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-white mb-2">Requested Relief Payment ($)</label>
+          <label htmlFor="amount" className="flex items-center text-sm font-medium text-white mb-2">
+            Requested Relief Payment ($)
+            <RequiredIndicator required isMet={!!formData.requestedAmount && formData.requestedAmount > 0} />
+            </label>
           <input
             type="number"
             id="amount"

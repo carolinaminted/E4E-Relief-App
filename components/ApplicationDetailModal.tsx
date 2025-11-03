@@ -57,19 +57,19 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({ applica
           </div>
           <div className="flex justify-between border-b border-[#002a50] pb-2">
             <span className="font-semibold text-white opacity-70">Event Type:</span>
-            <span>{application.event}</span>
+            <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">{application.event}</span>
           </div>
           <div className="flex justify-between border-b border-[#002a50] pb-2">
             <span className="font-semibold text-white opacity-70">Requested Amount:</span>
             <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${application.requestedAmount.toFixed(2)}</span>
           </div>
            <div className="flex justify-between border-b border-[#002a50] pb-2">
-            <span className="font-semibold text-white opacity-70">12 Month Grant Max:</span>
-            <span>${application.twelveMonthGrantMax.toFixed(2)}</span>
+            <span className="font-semibold text-white opacity-70">12 Month Remaining:</span>
+            <span>${application.twelveMonthGrantRemaining.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="font-semibold text-white opacity-70">Lifetime Grant Max:</span>
-            <span>${application.lifetimeGrantMax.toFixed(2)}</span>
+            <span className="font-semibold text-white opacity-70">Lifetime Remaining:</span>
+            <span>${application.lifetimeGrantRemaining.toFixed(2)}</span>
           </div>
         </div>
       </div>

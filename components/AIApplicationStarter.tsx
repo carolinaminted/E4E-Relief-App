@@ -52,7 +52,7 @@ const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onDetailsPa
       <p className="text-sm text-white mb-2">
         Describe your situation, including the event, impact, amount needed, household size/income, home ownership, mobile number, and preferred language. Our AI will pre-fill your application.
       </p>
-      <div className="flex flex-col md:flex-row gap-2">
+      <div className="flex flex-col md:flex-row md:items-end gap-2">
         <textarea
           id="ai-starter-input"
           value={descriptionInput}

@@ -46,8 +46,8 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile, 
         profileData: initialProfile,
         eventData: initialEvent,
         agreementData: {
-            shareStory: false,
-            receiveAdditionalInfo: false,
+            shareStory: null,
+            receiveAdditionalInfo: null,
         },
     };
   });

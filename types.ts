@@ -60,8 +60,8 @@ export interface Application {
   submittedDate: string;
   status: 'Submitted' | 'Awarded' | 'Declined';
   decisionedDate: string;
-  twelveMonthGrantMax: number;
-  lifetimeGrantMax: number;
+  twelveMonthGrantRemaining: number;
+  lifetimeGrantRemaining: number;
   // --- Agreements from final page
   shareStory: boolean;
   receiveAdditionalInfo: boolean;
@@ -74,7 +74,7 @@ export interface ApplicationFormData {
     requestedAmount: number;
   };
   agreementData: {
-    shareStory: boolean;
-    receiveAdditionalInfo: boolean;
+    shareStory: boolean | null;
+    receiveAdditionalInfo: boolean | null;
   };
 }

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { countries } from '../data/countries';
+import RequiredIndicator from './RequiredIndicator';
 
 interface CountrySelectorProps {
   id: string;
@@ -72,8 +73,8 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({ id, value, onUpdate, 
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <label htmlFor={id} className="block text-sm font-medium text-white mb-1">
-        Location {required && <span className="text-red-400">*</span>}
+      <label htmlFor={id} className="flex items-center text-sm font-medium text-white mb-1">
+        Location <RequiredIndicator required={required} isMet={!!value} />
       </label>
       <input
         id={id}
