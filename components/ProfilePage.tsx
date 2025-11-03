@@ -284,15 +284,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 <ChevronIcon isOpen={isApplicationsOpen} />
             </button>
             <div className={`transition-all duration-500 ease-in-out ${isApplicationsOpen ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-                <div className="bg-[#003a70]/50 p-4 rounded-lg mb-4 flex justify-around text-center border border-[#005ca0]">
+                <div className="bg-[#003a70]/50 p-4 rounded-lg mb-4 flex flex-col gap-4 sm:flex-row sm:justify-around text-center border border-[#005ca0]">
                     <div>
-                        <p className="text-sm text-gray-300 uppercase tracking-wider">12 Month Remaining</p>
+                        <p className="text-sm text-white uppercase tracking-wider">12-Month Remaining</p>
                         <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
                             ${twelveMonthRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-300 uppercase tracking-wider">Lifetime Remaining</p>
+                        <p className="text-sm text-white uppercase tracking-wider">Lifetime Remaining</p>
                         <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
                             ${lifetimeRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
