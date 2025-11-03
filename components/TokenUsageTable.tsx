@@ -8,11 +8,12 @@ interface TokenUsageTableProps {
 const TokenUsageTable: React.FC<TokenUsageTableProps> = ({ data }) => {
   
   const handleExportCSV = () => {
-    const headers = ['User', 'Session ID', 'Input Tokens', 'Cached Tokens', 'Output Tokens', 'Total Tokens', 'Cost (USD)'];
+    const headers = ['User', 'Session ID', 'Feature', 'Input Tokens', 'Cached Tokens', 'Output Tokens', 'Total Tokens', 'Cost (USD)'];
     const rows = data.map(row => 
       [
         row.user,
         row.session,
+        row.feature,
         row.input,
         row.cached,
         row.output,
@@ -51,31 +52,36 @@ const TokenUsageTable: React.FC<TokenUsageTableProps> = ({ data }) => {
         <table className="min-w-full text-sm text-left">
           <thead className="border-b border-[#005ca0] text-xs text-gray-300 uppercase">
             <tr>
-              <th scope="col" className="px-4 py-3">User</th>
-              <th scope="col" className="px-4 py-3">Session</th>
+              <th scope="col" className="px-4 py-3 hidden md:table-cell">User</th>
+              <th scope="col" className="px-4 py-3 hidden md:table-cell">Session</th>
+              <th scope="col" className="px-4 py-3">Feature</th>
               <th scope="col" className="px-4 py-3 text-right">Input</th>
-              <th scope="col" className="px-4 py-3 text-right">Cached</th>
+              <th scope="col" className="px-4 py-3 text-right hidden md:table-cell">Cached</th>
               <th scope="col" className="px-4 py-3 text-right">Output</th>
-              <th scope="col" className="px-4 py-3 text-right">Total</th>
+              <th scope="col" className="px-4 py-3 text-right hidden md:table-cell">Total</th>
               <th scope="col" className="px-4 py-3 text-right">Cost (USD)</th>
             </tr>
           </thead>
           <tbody>
             {data.length > 0 ? (
                 data.map((row, index) => (
-                    <tr key={`${row.user}-${row.session}-${index}`} className="border-b border-[#005ca0] hover:bg-[#004b8d]/50">
-                        <td className="px-4 py-2 font-medium text-white truncate">{row.user}</td>
-                        <td className="px-4 py-2 text-gray-300 font-mono">{row.session}</td>
+                    <tr key={`${row.user}-${row.session}-${row.feature}-${index}`} className="border-b border-[#005ca0] hover:bg-[#004b8d]/50">
+                        <td className="px-4 py-2 font-medium text-white truncate hidden md:table-cell">{row.user}</td>
+                        <td className="px-4 py-2 text-gray-300 font-mono hidden md:table-cell">{row.session}</td>
+                        <td className="px-4 py-2 text-gray-200">{row.feature}</td>
                         <td className="px-4 py-2 text-gray-300 text-right">{row.input.toLocaleString()}</td>
-                        <td className="px-4 py-2 text-gray-300 text-right">{row.cached.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-gray-300 text-right hidden md:table-cell">{row.cached.toLocaleString()}</td>
                         <td className="px-4 py-2 text-gray-300 text-right">{row.output.toLocaleString()}</td>
-                        <td className="px-4 py-2 text-white font-semibold text-right">{row.total.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-white font-semibold text-right hidden md:table-cell">{row.total.toLocaleString()}</td>
                         <td className="px-4 py-2 text-[#edda26] font-semibold text-right">${row.cost.toFixed(4)}</td>
                     </tr>
                 ))
             ) : (
                 <tr>
-                    <td colSpan={7} className="text-center py-8 text-gray-400">
+                    <td colSpan={4} className="text-center py-8 text-gray-400 md:hidden">
+                        No token usage data found for the selected filters.
+                    </td>
+                    <td colSpan={8} className="text-center py-8 text-gray-400 hidden md:table-cell">
                         No token usage data found for the selected filters.
                     </td>
                 </tr>

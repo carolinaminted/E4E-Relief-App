@@ -45,7 +45,7 @@ const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onParse, is
   return (
     <div className="bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0]">
       <p className="text-sm text-white mb-2">
-        Describe your situation, including the event, impact, amount needed, household size/income, home ownership, mobile number, and preferred language. Our AI will pre-fill your application.
+        Describe your situation below and our AI relief Assistant will pre-fill your application.
       </p>
       <div className="flex flex-col md:flex-row md:items-end gap-2">
         <textarea

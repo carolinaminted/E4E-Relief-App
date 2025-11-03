@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import type { TokenUsageFilters } from '../types';
+import type { TokenUsageFilters as TokenUsageFiltersType } from '../types';
 
 interface TokenUsageFiltersProps {
-  filters: TokenUsageFilters;
-  setFilters: React.Dispatch<React.SetStateAction<TokenUsageFilters>>;
+  filters: TokenUsageFiltersType;
+  setFilters: React.Dispatch<React.SetStateAction<TokenUsageFiltersType>>;
   filterOptions: {
     features: string[];
     models: string[];
@@ -36,10 +36,11 @@ const ChevronIcon: React.FC<{ isOpen: boolean }> = ({ isOpen }) => (
     </svg>
 );
 
-const TokenUsageFilters: React.FC<TokenUsageFiltersProps> = ({ filters, setFilters, filterOptions }) => {
+// FIX: Changed to a named export to avoid ambiguity with the TokenUsageFilters type.
+export const TokenUsageFilters: React.FC<TokenUsageFiltersProps> = ({ filters, setFilters, filterOptions }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleFilterChange = (key: keyof TokenUsageFilters, value: any) => {
+  const handleFilterChange = (key: keyof TokenUsageFiltersType, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
@@ -71,4 +72,15 @@ const TokenUsageFilters: React.FC<TokenUsageFiltersProps> = ({ filters, setFilte
   );
 };
 
-export default TokenUsageFilters;
+// Renamed props interface to avoid conflict in this file
+interface TokenUsageFiltersProps {
+  filters: TokenUsageFiltersType;
+  setFilters: React.Dispatch<React.SetStateAction<TokenUsageFiltersType>>;
+  filterOptions: {
+    features: string[];
+    models: string[];
+    environments: string[];
+    users: string[];
+    accounts: string[];
+  };
+}

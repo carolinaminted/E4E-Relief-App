@@ -1,8 +1,7 @@
-import type { TokenEvent, TokenUsageTableRow, TopSessionData, DailyUsageData, ModelPricing, TokenUsageFilters, UserProfile } from '../types';
+import type { TokenEvent, TokenUsageTableRow, TopSessionData, LastHourUsageDataPoint, ModelPricing, TokenUsageFilters, UserProfile } from '../types';
 
 // --- State ---
 let sessionTokenEvents: TokenEvent[] = [];
-let sessionId: string | null = null;
 let currentUser: UserProfile | null = null;
 const currentAccount: string = 'E4E-Relief-Inc';
 // In a real app, this might come from an environment variable
@@ -26,9 +25,8 @@ const MODEL_PRICING: ModelPricing = {
  */
 export function init(user: UserProfile) {
   currentUser = user;
-  sessionId = `sess-${user.email.split('@')[0]}-${Date.now()}`;
   sessionTokenEvents = [];
-  console.log('Token Tracker Initialized for session:', sessionId);
+  console.log('Token Tracker Initialized for user:', user.email);
 }
 
 /**
@@ -36,7 +34,6 @@ export function init(user: UserProfile) {
  */
 export function reset() {
   currentUser = null;
-  sessionId = null;
   sessionTokenEvents = [];
   console.log('Token Tracker Reset.');
 }
@@ -59,15 +56,16 @@ export function logEvent(data: {
   inputTokens: number;
   outputTokens: number;
   cachedInputTokens?: number;
+  sessionId: string;
 }) {
-  if (!currentUser || !sessionId) {
+  if (!currentUser) {
     console.warn('Token Tracker not initialized, skipping log.');
     return;
   }
 
   const newEvent: TokenEvent = {
     id: `evt-${Math.random().toString(36).substr(2, 9)}`,
-    sessionId: sessionId,
+    sessionId: data.sessionId,
     userId: currentUser.email,
     timestamp: new Date().toISOString(),
     feature: data.feature,
@@ -94,26 +92,26 @@ export function getTokenUsageTableData(filters: TokenUsageFilters): TokenUsageTa
         (filters.environment === 'all' || event.environment === filters.environment)
     );
 
-    const usageBySession: { [key: string]: Omit<TokenUsageTableRow, 'user' | 'session'> } = {};
+    const usageByFeatureInSession: { [key: string]: Omit<TokenUsageTableRow, 'user' | 'session' | 'feature'> } = {};
 
     for (const event of filteredEvents) {
-        const key = `${event.userId}|${event.sessionId}`;
-        if (!usageBySession[key]) {
-            usageBySession[key] = { input: 0, cached: 0, output: 0, total: 0, cost: 0 };
+        const key = `${event.userId}|${event.sessionId}|${event.feature}`;
+        if (!usageByFeatureInSession[key]) {
+            usageByFeatureInSession[key] = { input: 0, cached: 0, output: 0, total: 0, cost: 0 };
         }
         const pricing = MODEL_PRICING[event.model] || { input: 0, output: 0 };
         const eventCost = ((event.inputTokens / 1000) * pricing.input) + ((event.outputTokens / 1000) * pricing.output);
 
-        usageBySession[key].input += event.inputTokens;
-        usageBySession[key].cached += event.cachedInputTokens;
-        usageBySession[key].output += event.outputTokens;
-        usageBySession[key].total += event.inputTokens + event.cachedInputTokens + event.outputTokens;
-        usageBySession[key].cost += eventCost;
+        usageByFeatureInSession[key].input += event.inputTokens;
+        usageByFeatureInSession[key].cached += event.cachedInputTokens;
+        usageByFeatureInSession[key].output += event.outputTokens;
+        usageByFeatureInSession[key].total += event.inputTokens + event.cachedInputTokens + event.outputTokens;
+        usageByFeatureInSession[key].cost += eventCost;
     }
 
-    return Object.entries(usageBySession).map(([key, data]) => {
-        const [user, session] = key.split('|');
-        return { user, session, ...data };
+    return Object.entries(usageByFeatureInSession).map(([key, data]) => {
+        const [user, session, feature] = key.split('|');
+        return { user, session, feature, ...data };
     });
 }
 
@@ -122,40 +120,72 @@ export function getTopSessionData(filters: TokenUsageFilters): TopSessionData | 
     const tableData = getTokenUsageTableData(filters);
     if (tableData.length === 0) return null;
 
-    const topSession = tableData.reduce((max, current) => current.total > max.total ? current : max, tableData[0]);
+    // Re-aggregate by session to find the true top session, as tableData is now granular by feature
+    const usageBySession: { [sessionId: string]: TopSessionData } = {};
+    for (const row of tableData) {
+        if (!usageBySession[row.session]) {
+            usageBySession[row.session] = {
+                sessionId: row.session,
+                inputTokens: 0,
+                cachedInputTokens: 0,
+                outputTokens: 0,
+                totalTokens: 0,
+            };
+        }
+        usageBySession[row.session].inputTokens += row.input;
+        usageBySession[row.session].cachedInputTokens += row.cached;
+        usageBySession[row.session].outputTokens += row.output;
+        usageBySession[row.session].totalTokens += row.total;
+    }
+
+    const allSessions = Object.values(usageBySession);
+    if (allSessions.length === 0) return null;
+
+    // Find the session with the highest total token count
+    const topSession = allSessions.reduce((max, current) => current.totalTokens > max.totalTokens ? current : max, allSessions[0]);
     
-    return {
-        sessionId: topSession.session,
-        inputTokens: topSession.input,
-        cachedInputTokens: topSession.cached,
-        outputTokens: topSession.output,
-        totalTokens: topSession.total,
-    };
+    return topSession;
 }
 
 
-export function getAIAssistantUsageData(filters: TokenUsageFilters): DailyUsageData[] {
-    const assistantEvents = sessionTokenEvents.filter(event => 
-        event.feature === 'AI Assistant' &&
-        (filters.account === 'all' || event.account === filters.account) &&
-        (filters.user === 'all' || event.userId === filters.user) &&
-        (filters.model === 'all' || event.model === filters.model) &&
-        (filters.environment === 'all' || event.environment === filters.environment)
-    );
+export function getUsageLastHour(filters: TokenUsageFilters): LastHourUsageDataPoint[] {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
-    const usageByDay: { [key: string]: number } = {};
+    const filteredEvents = sessionTokenEvents.filter(event => {
+        const eventDate = new Date(event.timestamp);
+        return eventDate >= oneHourAgo &&
+            (filters.account === 'all' || event.account === filters.account) &&
+            (filters.user === 'all' || event.userId === filters.user) &&
+            (filters.feature === 'all' || event.feature === filters.feature) &&
+            (filters.model === 'all' || event.model === filters.model) &&
+            (filters.environment === 'all' || event.environment === filters.environment)
+    });
+
+    // Create a map of usage per minute
+    const usageByMinute: Map<string, number> = new Map();
+    for (const event of filteredEvents) {
+        const eventDate = new Date(event.timestamp);
+        eventDate.setSeconds(0, 0); // Normalize to the start of the minute
+        const minuteKey = eventDate.toISOString();
+        const totalTokens = event.inputTokens + event.cachedInputTokens + event.outputTokens;
+        usageByMinute.set(minuteKey, (usageByMinute.get(minuteKey) || 0) + totalTokens);
+    }
     
-    for (const event of assistantEvents) {
-        const date = event.timestamp.split('T')[0];
-        if (!usageByDay[date]) {
-            usageByDay[date] = 0;
-        }
-        usageByDay[date] += event.inputTokens + event.cachedInputTokens + event.outputTokens;
+    // Create a full 61-point array for every minute in the last hour for the chart
+    const fullHourData: LastHourUsageDataPoint[] = [];
+    for (let i = 0; i <= 60; i++) {
+        const minuteTimestamp = new Date(oneHourAgo.getTime() + i * 60 * 1000);
+        minuteTimestamp.setSeconds(0, 0);
+        const minuteKey = minuteTimestamp.toISOString();
+        
+        fullHourData.push({
+            timestamp: minuteKey,
+            totalTokens: usageByMinute.get(minuteKey) || 0
+        });
     }
 
-    return Object.entries(usageByDay)
-        .map(([date, totalTokens]) => ({ date, totalTokens }))
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return fullHourData;
 }
 
 

@@ -61,6 +61,9 @@ const initialApplications: Record<string, Application[]> = {
       event: 'Flood',
       eventDate: '2023-08-10',
       requestedAmount: 2500,
+      // FIX: Added missing 'evacuated' and 'powerLoss' properties to satisfy the Application type.
+      evacuated: 'No',
+      powerLoss: 'Yes',
       submittedDate: '2023-08-12',
       status: 'Awarded',
       reasons: ["Application meets all automatic approval criteria."],
@@ -220,10 +223,10 @@ function App() {
       id: tempId,
       profileSnapshot: appFormData.profileData,
       ...appFormData.eventData,
-      evacuated: appFormData.eventData.evacuated || undefined,
+      evacuated: appFormData.eventData.evacuated || '',
       evacuatingFromPrimary: appFormData.eventData.evacuatingFromPrimary || undefined,
       stayedWithFamilyOrFriend: appFormData.eventData.stayedWithFamilyOrFriend || undefined,
-      powerLoss: appFormData.eventData.powerLoss || undefined,
+      powerLoss: appFormData.eventData.powerLoss || '',
       evacuationNights: appFormData.eventData.evacuationNights || undefined,
       powerLossDays: appFormData.eventData.powerLossDays || undefined,
       submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD

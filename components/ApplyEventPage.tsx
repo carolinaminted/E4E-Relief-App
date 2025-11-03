@@ -111,7 +111,8 @@ const ApplyEventPage: React.FC<ApplyEventPageProps> = ({ formData, updateFormDat
                 required
                 value={formData.event || ''}
                 options={eventTypes}
-                onUpdate={value => handleUpdate({ event: value })}
+                // FIX: Cast the value from the generic string provided by the selector to the specific string literal union type required by EventData.
+                onUpdate={value => handleUpdate({ event: value as EventData['event'] })}
                 variant="underline"
                 error={errors.event}
             />

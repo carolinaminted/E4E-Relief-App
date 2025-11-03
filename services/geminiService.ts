@@ -10,6 +10,10 @@ if (!API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
+const generateSessionId = (prefix: string): string => {
+    return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
 const addressSchema = {
     type: Type.OBJECT,
     properties: {
@@ -313,6 +317,7 @@ export async function getAIAssistedDecision(
     `;
     const model = 'gemini-2.5-flash';
     const inputTokens = estimateTokens(prompt);
+    const sessionId = generateSessionId('ai-decisioning');
 
     try {
         const response = await ai.models.generateContent({
@@ -325,7 +330,7 @@ export async function getAIAssistedDecision(
         });
         
         const outputTokens = estimateTokens(response.text);
-        logTokenEvent({ feature: 'Final Decision', model, inputTokens, outputTokens });
+        logTokenEvent({ feature: 'Final Decision', model, inputTokens, outputTokens, sessionId });
 
         const jsonString = response.text.trim();
         const aiResponse = JSON.parse(jsonString) as { finalDecision: 'Approved' | 'Denied', finalReason: string, finalAward: number };
@@ -388,6 +393,7 @@ export async function parseAddressWithGemini(addressString: string): Promise<Par
   `;
   const model = 'gemini-2.5-flash';
   const inputTokens = estimateTokens(prompt);
+  const sessionId = generateSessionId('ai-address-parsing');
 
   try {
     const response = await ai.models.generateContent({
@@ -400,7 +406,7 @@ export async function parseAddressWithGemini(addressString: string): Promise<Par
     });
 
     const outputTokens = estimateTokens(response.text);
-    logTokenEvent({ feature: 'Address Parsing', model, inputTokens, outputTokens });
+    logTokenEvent({ feature: 'Address Parsing', model, inputTokens, outputTokens, sessionId });
 
     const jsonString = response.text.trim();
     if (jsonString) {
@@ -480,6 +486,7 @@ export async function parseApplicationDetailsWithGemini(
   `;
   const model = 'gemini-2.5-flash';
   const inputTokens = estimateTokens(prompt);
+  const sessionId = generateSessionId('ai-app-parsing');
 
   try {
     const response = await ai.models.generateContent({
@@ -492,7 +499,7 @@ export async function parseApplicationDetailsWithGemini(
     });
 
     const outputTokens = estimateTokens(response.text);
-    logTokenEvent({ feature: 'Application Parsing', model, inputTokens, outputTokens });
+    logTokenEvent({ feature: 'Application Parsing', model, inputTokens, outputTokens, sessionId });
 
     const jsonString = response.text.trim();
     if (jsonString) {

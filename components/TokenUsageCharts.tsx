@@ -1,9 +1,9 @@
 import React from 'react';
-import type { TopSessionData, DailyUsageData } from '../types';
+import type { TopSessionData, LastHourUsageDataPoint } from '../types';
 
 interface TokenUsageChartsProps {
   topSession: TopSessionData | null;
-  assistantUsage: DailyUsageData[];
+  lastHourUsage: LastHourUsageDataPoint[];
 }
 
 const Bar: React.FC<{ value: number, total: number, color: string, label: string }> = ({ value, total, color, label }) => {
@@ -38,10 +38,16 @@ const TopSessionChart: React.FC<{ topSession: TopSessionData | null }> = ({ topS
     );
 };
 
-const AssistantUsageChart: React.FC<{ usage: DailyUsageData[] }> = ({ usage }) => {
-    if (usage.length < 2) {
-        return <p className="text-gray-400 text-center">Not enough daily data to display a chart.</p>;
+const LastHourUsageChart: React.FC<{ usage: LastHourUsageDataPoint[] }> = ({ usage }) => {
+    const maxValue = Math.max(...usage.map(d => d.totalTokens));
+    const hasData = usage.some(d => d.totalTokens > 0);
+
+    if (!hasData) {
+        return <p className="text-gray-400 text-center">No token usage recorded in the last hour.</p>;
     }
+
+    // Determine a sensible maximum for the Y-axis. Round up to the nearest 500, with a minimum of 500.
+    const yAxisMax = Math.max(500, Math.ceil(maxValue / 500) * 500);
 
     const width = 500;
     const height = 200;
@@ -49,24 +55,28 @@ const AssistantUsageChart: React.FC<{ usage: DailyUsageData[] }> = ({ usage }) =
     const usableWidth = width - padding * 2;
     const usableHeight = height - padding;
 
-    const maxTokens = Math.max(...usage.map(d => d.totalTokens), 0);
+    const tokensToY = (tokens: number) => height - (Math.min(tokens, yAxisMax) / yAxisMax) * usableHeight - (padding / 2);
     const dateToX = (index: number) => (index / (usage.length - 1)) * usableWidth + padding;
-    const tokensToY = (tokens: number) => height - (tokens / maxTokens) * usableHeight - (padding/2);
-
+    
     const points = usage.map((d, i) => `${dateToX(i)},${tokensToY(d.totalTokens)}`).join(' ');
 
-    const yAxisLabels = [0, maxTokens / 2, maxTokens].map(val => ({
-        value: val,
-        y: tokensToY(val)
-    }));
-
-    const xAxisLabels = [usage[0], usage[Math.floor(usage.length/2)], usage[usage.length - 1]].map((d,i) => {
-        const index = i === 0 ? 0 : i === 1 ? Math.floor(usage.length/2) : usage.length - 1;
+    // Dynamically generate Y-Axis labels (5 of them)
+    const yAxisLabels = Array.from({ length: 5 }).map((_, i) => {
+        const value = Math.round((yAxisMax / 4) * i);
         return {
-            value: new Date(d.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            x: dateToX(index)
+            value,
+            y: tokensToY(value)
         };
     });
+
+    // X-Axis
+    const xAxisLabels = [
+        { value: "-60m", x: dateToX(0) },
+        { value: "-45m", x: dateToX(15) },
+        { value: "-30m", x: dateToX(30) },
+        { value: "-15m", x: dateToX(45) },
+        { value: "Now",  x: dateToX(60) },
+    ];
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
@@ -75,13 +85,14 @@ const AssistantUsageChart: React.FC<{ usage: DailyUsageData[] }> = ({ usage }) =
                 <g key={value}>
                     <line x1={padding} y1={y} x2={width - padding} y2={y} stroke="#005ca0" strokeWidth="1" />
                     <text x={padding - 5} y={y + 3} fill="#9ca3af" textAnchor="end" fontSize="10">
-                        {Math.round(value).toLocaleString()}
+                        {value >= 1000 ? `${(value/1000).toFixed(1).replace('.0', '')}k` : value}
                     </text>
                 </g>
             ))}
+
             {/* X-Axis Labels */}
-            {xAxisLabels.map(({ value, x }) => (
-                <text key={value} x={x} y={height - 5} fill="#9ca3af" textAnchor="middle" fontSize="10">{value}</text>
+            {xAxisLabels.map(({ value, x }, index) => (
+                <text key={index} x={x} y={height - 5} fill="#9ca3af" textAnchor="middle" fontSize="10">{value}</text>
             ))}
             
             {/* Data Line */}
@@ -91,7 +102,7 @@ const AssistantUsageChart: React.FC<{ usage: DailyUsageData[] }> = ({ usage }) =
 };
 
 
-const TokenUsageCharts: React.FC<TokenUsageChartsProps> = ({ topSession, assistantUsage }) => {
+const TokenUsageCharts: React.FC<TokenUsageChartsProps> = ({ topSession, lastHourUsage }) => {
   return (
     <div className="grid md:grid-cols-2 gap-8">
       <div className="bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0]">
@@ -99,8 +110,8 @@ const TokenUsageCharts: React.FC<TokenUsageChartsProps> = ({ topSession, assista
         <TopSessionChart topSession={topSession} />
       </div>
       <div className="bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0]">
-        <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-4">AI Relief Assistant All-Time Usage</h3>
-        <AssistantUsageChart usage={assistantUsage} />
+        <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-4">Token Usage (Last Hour)</h3>
+        <LastHourUsageChart usage={lastHourUsage} />
       </div>
     </div>
   );

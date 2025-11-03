@@ -61,26 +61,27 @@ export async function getTokenUsageTableData(filters: TokenUsageFilters, current
         (filters.environment === 'all' || event.environment === filters.environment)
     );
 
-    const usageBySession: { [key: string]: Omit<TokenUsageTableRow, 'user' | 'session'> } = {};
+    // FIX: Changed aggregation to be by feature within a session to match the expected TokenUsageTableRow structure.
+    const usageByFeatureInSession: { [key: string]: Omit<TokenUsageTableRow, 'user' | 'session' | 'feature'> } = {};
 
     for (const event of filteredEvents) {
-        const key = `${event.userId}|${event.sessionId}`;
-        if (!usageBySession[key]) {
-            usageBySession[key] = { input: 0, cached: 0, output: 0, total: 0, cost: 0 };
+        const key = `${event.userId}|${event.sessionId}|${event.feature}`;
+        if (!usageByFeatureInSession[key]) {
+            usageByFeatureInSession[key] = { input: 0, cached: 0, output: 0, total: 0, cost: 0 };
         }
         const pricing = MODEL_PRICING[event.model] || { input: 0, output: 0 };
         const eventCost = ((event.inputTokens / 1000) * pricing.input) + ((event.outputTokens / 1000) * pricing.output);
 
-        usageBySession[key].input += event.inputTokens;
-        usageBySession[key].cached += event.cachedInputTokens;
-        usageBySession[key].output += event.outputTokens;
-        usageBySession[key].total += event.inputTokens + event.cachedInputTokens + event.outputTokens;
-        usageBySession[key].cost += eventCost;
+        usageByFeatureInSession[key].input += event.inputTokens;
+        usageByFeatureInSession[key].cached += event.cachedInputTokens;
+        usageByFeatureInSession[key].output += event.outputTokens;
+        usageByFeatureInSession[key].total += event.inputTokens + event.cachedInputTokens + event.outputTokens;
+        usageByFeatureInSession[key].cost += eventCost;
     }
 
-    return Object.entries(usageBySession).map(([key, data]) => {
-        const [user, session] = key.split('|');
-        return { user, session, ...data };
+    return Object.entries(usageByFeatureInSession).map(([key, data]) => {
+        const [user, session, feature] = key.split('|');
+        return { user, session, feature, ...data };
     });
 }
 
@@ -92,15 +93,31 @@ export async function getTopSessionData(filters: TokenUsageFilters, currentUserE
     const tableData = await getTokenUsageTableData(filters, currentUserEmail);
     if (tableData.length === 0) return null;
 
-    const topSession = tableData.reduce((max, current) => current.total > max.total ? current : max, tableData[0]);
+    // FIX: Re-aggregate by session to find the true top session, as tableData is now granular by feature.
+    const usageBySession: { [sessionId: string]: TopSessionData } = {};
+    for (const row of tableData) {
+        if (!usageBySession[row.session]) {
+            usageBySession[row.session] = {
+                sessionId: row.session,
+                inputTokens: 0,
+                cachedInputTokens: 0,
+                outputTokens: 0,
+                totalTokens: 0,
+            };
+        }
+        usageBySession[row.session].inputTokens += row.input;
+        usageBySession[row.session].cachedInputTokens += row.cached;
+        usageBySession[row.session].outputTokens += row.output;
+        usageBySession[row.session].totalTokens += row.total;
+    }
+
+    const allSessions = Object.values(usageBySession);
+    if (allSessions.length === 0) return null;
     
-    return {
-        sessionId: topSession.session,
-        inputTokens: topSession.input,
-        cachedInputTokens: topSession.cached,
-        outputTokens: topSession.output,
-        totalTokens: topSession.total,
-    };
+    // Find the session with the highest total token count
+    const topSession = allSessions.reduce((max, current) => current.totalTokens > max.totalTokens ? current : max, allSessions[0]);
+    
+    return topSession;
 }
 
 

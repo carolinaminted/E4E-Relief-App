@@ -1,5 +1,7 @@
 import React from 'react';
-import { ChatMessage, MessageRole } from '../types';
+// FIX: Separated type and value imports for ChatMessage and MessageRole.
+import { MessageRole } from '../types';
+import type { ChatMessage } from '../types';
 
 interface ChatMessageBubbleProps {
   message: ChatMessage;
