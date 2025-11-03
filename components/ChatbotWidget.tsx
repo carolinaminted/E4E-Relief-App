@@ -22,12 +22,50 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications, onChatbotAc
   const chatSessionRef = useRef<Chat | null>(null);
   const chatTokenSessionIdRef = useRef<string | null>(null);
 
+  const [isButtonVisible, setIsButtonVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
   useEffect(() => {
     if (isOpen) {
         chatSessionRef.current = createChatSession(applications);
         chatTokenSessionIdRef.current = `ai-chat-${Math.random().toString(36).substr(2, 9)}`;
     }
   }, [isOpen, applications]);
+  
+  // Effect to handle scroll-based visibility for the chat button
+  useEffect(() => {
+    if (isOpen) {
+      // If the chat window is open, the button must be visible to allow closing it.
+      setIsButtonVisible(true);
+      return;
+    }
+
+    lastScrollY.current = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // A small threshold to prevent flickering on minor scroll adjustments
+      if (Math.abs(currentScrollY - lastScrollY.current) < 20) {
+        return;
+      }
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        // Scrolling down and we're not near the top of the page
+        setIsButtonVisible(false);
+      } else {
+        // Scrolling up
+        setIsButtonVisible(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isOpen]);
 
   const handleSendMessage = useCallback(async (userInput: string) => {
     if (!userInput.trim() || isLoading) return;
@@ -146,7 +184,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications, onChatbotAc
 
     <button
         onClick={toggleChat}
-        className="fixed bottom-8 left-8 bg-[#ff8400] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-[#e67700] transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#ff8400] focus:ring-opacity-50 z-50"
+        className={`fixed bottom-8 left-8 bg-[#ff8400] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-[#e67700] transition-all duration-500 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#ff8400] focus:ring-opacity-50 z-50 ${isButtonVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-24 pointer-events-none'}`}
         aria-label={isOpen ? "Close Chat" : "Open Chat"}
       >
         {isOpen ? (
