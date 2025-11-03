@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
-import type { UserProfile, Application } from './types';
+import type { UserProfile, Application, EventData } from './types';
 import { evaluateApplicationEligibility } from './services/geminiService';
 // FIX: Corrected the import path for ApplicationFormData. It should be imported from './types' instead of a component file.
 import type { ApplicationFormData } from './types';
@@ -57,6 +57,7 @@ const initialApplications: Record<string, Application[]> = {
       id: 'APP-1001',
       profileSnapshot: initialUsers['user@example.com'], // Snapshot of the user profile
       event: 'Flood',
+      eventDate: '2023-08-10',
       requestedAmount: 2500,
       submittedDate: '2023-08-12',
       status: 'Awarded',
@@ -184,17 +185,22 @@ function App() {
     const { decision, decisionedDate, newTwelveMonthRemaining, newLifetimeRemaining } = await evaluateApplicationEligibility({
         id: tempId,
         employmentStartDate: appFormData.profileData.employmentStartDate,
-        event: appFormData.eventData.event,
-        requestedAmount: appFormData.eventData.requestedAmount,
+        eventData: appFormData.eventData,
         currentTwelveMonthRemaining: currentTwelveMonthRemaining,
         currentLifetimeRemaining: currentLifetimeRemaining,
     });
 
+    // FIX: Coerce empty string values from form data to undefined to match the Application type, which uses undefined for optional fields instead of empty strings.
     const newApplication: Application = {
       id: tempId,
       profileSnapshot: appFormData.profileData,
-      event: appFormData.eventData.event,
-      requestedAmount: appFormData.eventData.requestedAmount,
+      ...appFormData.eventData,
+      evacuated: appFormData.eventData.evacuated || undefined,
+      evacuatingFromPrimary: appFormData.eventData.evacuatingFromPrimary || undefined,
+      stayedWithFamilyOrFriend: appFormData.eventData.stayedWithFamilyOrFriend || undefined,
+      powerLoss: appFormData.eventData.powerLoss || undefined,
+      evacuationNights: appFormData.eventData.evacuationNights || undefined,
+      powerLossDays: appFormData.eventData.powerLossDays || undefined,
       submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
       status: decision,
       decisionedDate: decisionedDate,
@@ -241,7 +247,8 @@ function App() {
         }
 
         if (functionName === 'startOrUpdateApplicationDraft') {
-            newDraft.eventData = { ...(prevDraft?.eventData || {}), ...args };
+            const prevEventData: Partial<EventData> = prevDraft?.eventData || {};
+            newDraft.eventData = { ...prevEventData, ...args };
         }
         return newDraft;
     });

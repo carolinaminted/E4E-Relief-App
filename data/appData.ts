@@ -2,7 +2,8 @@ export const eventTypes: string[] = [
     'Flood',
     'Tornado',
     'Tropical Storm/Hurricane',
-    'Wildfire'
+    'Wildfire',
+    'My disaster is not listed'
 ];
 
 export const employmentTypes: string[] = [

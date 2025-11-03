@@ -48,6 +48,34 @@ export interface UserProfile {
   infoCorrect: boolean;
 }
 
+export interface EventData {
+    // 201
+    event: string;
+    // 202
+    otherEvent?: string;
+    // 203
+    eventDate: string;
+    // 204
+    evacuated: 'Yes' | 'No' | '';
+    // 205
+    evacuatingFromPrimary: 'Yes' | 'No' | '';
+    // 206
+    evacuationReason?: string;
+    // 207
+    stayedWithFamilyOrFriend: 'Yes' | 'No' | '';
+    // 208
+    evacuationStartDate: string;
+    // 209
+    evacuationNights: number | '';
+    // 210
+    powerLoss: 'Yes' | 'No' | '';
+    // 211
+    powerLossDays: number | '';
+    // 212
+    additionalDetails?: string;
+    requestedAmount: number;
+}
+
 
 export interface Application {
   id: string;
@@ -55,6 +83,17 @@ export interface Application {
   profileSnapshot: UserProfile;
   // --- Event Details
   event: string;
+  otherEvent?: string;
+  eventDate?: string;
+  evacuated?: 'Yes' | 'No';
+  evacuatingFromPrimary?: 'Yes' | 'No';
+  evacuationReason?: string;
+  stayedWithFamilyOrFriend?: 'Yes' | 'No';
+  evacuationStartDate?: string;
+  evacuationNights?: number;
+  powerLoss?: 'Yes' | 'No';
+  powerLossDays?: number;
+  additionalDetails?: string;
   requestedAmount: number;
   // --- Metadata
   submittedDate: string;
@@ -69,10 +108,7 @@ export interface Application {
 
 export interface ApplicationFormData {
   profileData: UserProfile;
-  eventData: {
-    event: string;
-    requestedAmount: number;
-  };
+  eventData: EventData;
   agreementData: {
     shareStory: boolean | null;
     receiveAdditionalInfo: boolean | null;

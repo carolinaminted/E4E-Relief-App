@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Chat, FunctionDeclaration, Type } from "@google/genai";
-import type { Application, Address, UserProfile, ApplicationFormData } from '../types';
+import type { Application, Address, UserProfile, ApplicationFormData, EventData } from '../types';
 
 const API_KEY = process.env.API_KEY;
 
@@ -48,7 +48,18 @@ const startOrUpdateApplicationDraftTool: FunctionDeclaration = {
   parameters: {
     type: Type.OBJECT,
     properties: {
-      event: { type: Type.STRING, description: 'The type of event the user is applying for relief from.', enum: ['Flood', 'Tornado', 'Tropical Storm/Hurricane', 'Wildfire'] },
+      event: { type: Type.STRING, description: "The type of event the user is applying for relief from.", enum: ['Flood', 'Tornado', 'Tropical Storm/Hurricane', 'Wildfire', 'My disaster is not listed'] },
+      otherEvent: { type: Type.STRING, description: "The user-specified disaster if 'My disaster is not listed' is the event type." },
+      eventDate: { type: Type.STRING, description: "The date the disaster occurred, in YYYY-MM-DD format." },
+      evacuated: { type: Type.STRING, description: "Whether the user evacuated or plans to.", enum: ['Yes', 'No'] },
+      evacuatingFromPrimary: { type: Type.STRING, description: "Whether the evacuation is from their primary residence.", enum: ['Yes', 'No'] },
+      evacuationReason: { type: Type.STRING, description: "The reason for evacuation if not from primary residence." },
+      stayedWithFamilyOrFriend: { type: Type.STRING, description: "Whether the user stayed with family or friends during evacuation.", enum: ['Yes', 'No'] },
+      evacuationStartDate: { type: Type.STRING, description: "The start date of the evacuation, in YYYY-MM-DD format." },
+      evacuationNights: { type: Type.NUMBER, description: "The number of nights the user was or will be evacuated." },
+      powerLoss: { type: Type.STRING, description: "Whether the user lost power for more than 4 hours.", enum: ['Yes', 'No'] },
+      powerLossDays: { type: Type.NUMBER, description: "The number of days the user was without power." },
+      additionalDetails: { type: Type.STRING, description: "Any additional details provided by the user about their situation." },
       requestedAmount: { type: Type.NUMBER, description: 'The amount of financial relief the user is requesting.' },
     },
   },
@@ -69,7 +80,7 @@ Your **PRIMARY GOAL** is to proactively help users start or update their relief 
 1.  **Listen and Extract**: When a user provides information (e.g., "I'm John Doe, I live in Charlotte, NC, was affected by the recent flood and need $1500"), extract the entities (\`firstName: "John"\`, \`lastName: "Doe"\`, \`primaryAddress: { city: "Charlotte", state: "NC" }\`, \`event: "Flood"\`, \`requestedAmount: 1500\`).
 2.  **Use Your Tools**: Call the appropriate tool(s) with the extracted information. You can call multiple tools at once if the user provides enough information.
 3.  **Confirm Your Actions**: After you call a tool, you MUST confirm what you've done. For example: "Thanks, John. I've updated your name and location, and started a draft application for the 'Flood' event with a requested amount of $1,500."
-4.  **Ask Clarifying Questions**: If information is missing, ask for it. For example, if a user says "I was in a tornado," respond with something like: "I'm sorry to hear that. I've noted the event as 'Tornado'. How much financial assistance are you requesting?"
+4.  **Ask Clarifying Questions**: If information is missing, ask for it. For example, if a user says "I was in a tornado," respond with something like: "I'm sorry to hear that. I've noted the event as 'Tornado'. What was the date of the event, and how much financial assistance are you requesting?"
 5.  **Be Helpful**: If the user just wants to ask a question, answer it based on the application context below.
 
 ---
@@ -116,8 +127,7 @@ export async function evaluateApplicationEligibility(
   appData: { 
     id: string; 
     employmentStartDate: string; 
-    event: string; 
-    requestedAmount: number;
+    eventData: EventData;
     currentTwelveMonthRemaining: number;
     currentLifetimeRemaining: number;
   }
@@ -127,7 +137,11 @@ export async function evaluateApplicationEligibility(
     newTwelveMonthRemaining: number;
     newLifetimeRemaining: number;
 }> {
-  const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+  const today = new Date();
+  const ninetyDaysAgo = new Date(today);
+  ninetyDaysAgo.setDate(today.getDate() - 90);
+  const todayStr = today.toISOString().split('T')[0];
+  const ninetyDaysAgoStr = ninetyDaysAgo.toISOString().split('T')[0];
 
   const eligibilityDecisionSchema = {
     type: Type.OBJECT,
@@ -142,11 +156,12 @@ export async function evaluateApplicationEligibility(
   const prompt = `
     Analyze the following application details based on the strict eligibility rules and return a JSON object with the decision and updated remaining grant amounts.
 
-    **Eligibility Rules:**
-    1. Event: Must be exactly "Tornado" or "Flood".
-    2. Employment Start Date: Must be a date on or before today's date (${today}).
-    3. Requested Amount: Must be less than or equal to the current 12 Month Remaining amount (${appData.currentTwelveMonthRemaining}).
-    4. Requested Amount: Must be less than or equal to 10000.
+    **Eligibility Rules (must pass ALL):**
+    1.  **Event Type**: The event must NOT be "My disaster is not listed". If it is, the application is automatically Declined.
+    2.  **Event Date**: The event date must be on or after ${ninetyDaysAgoStr} (within the last 90 days).
+    3.  **Employment Start Date**: Must be a date on or before the event date (${appData.eventData.eventDate}).
+    4.  **Requested Amount vs. Grant Limits**: The requested amount must be less than or equal to the current 12-Month Remaining Grant amount (${appData.currentTwelveMonthRemaining}).
+    5.  **Maximum Request Amount**: The requested amount must be less than or equal to 10000.
 
     **Remaining Grant Amount Update Rules:**
     - If the decision is "Awarded", calculate the new remaining amounts by subtracting the 'Requested Amount' from the current remaining amounts.
@@ -155,10 +170,17 @@ export async function evaluateApplicationEligibility(
     **Applicant Details:**
     - Application ID: ${appData.id}
     - Employment Start Date: ${appData.employmentStartDate}
-    - Event: ${appData.event}
-    - Requested Amount: ${appData.requestedAmount}
     - Current 12 Month Remaining: ${appData.currentTwelveMonthRemaining}
     - Current Lifetime Remaining: ${appData.currentLifetimeRemaining}
+    
+    **Event Details:**
+    - Event: "${appData.eventData.event}"
+    - Other Event (if specified): "${appData.eventData.otherEvent || 'N/A'}"
+    - Event Date: ${appData.eventData.eventDate}
+    - Requested Amount: ${appData.eventData.requestedAmount}
+    - Evacuated: ${appData.eventData.evacuated || 'N/A'}
+    - Power Loss: ${appData.eventData.powerLoss || 'N/A'}
+    - Days without Power: ${appData.eventData.powerLossDays || 'N/A'}
   `;
 
   try {
@@ -175,7 +197,7 @@ export async function evaluateApplicationEligibility(
 
     return { 
         decision: result.decision, 
-        decisionedDate: today,
+        decisionedDate: todayStr,
         newTwelveMonthRemaining: result.newTwelveMonthRemaining,
         newLifetimeRemaining: result.newLifetimeRemaining
     };
@@ -185,7 +207,7 @@ export async function evaluateApplicationEligibility(
     // Default to a safe status in case of API error
     return { 
         decision: 'Declined', 
-        decisionedDate: today,
+        decisionedDate: todayStr,
         newTwelveMonthRemaining: appData.currentTwelveMonthRemaining,
         newLifetimeRemaining: appData.currentLifetimeRemaining
     };
@@ -269,7 +291,13 @@ const applicationDetailsJsonSchema = {
         eventData: {
             type: Type.OBJECT,
             properties: {
-                event: { type: Type.STRING, description: 'The type of event the user is applying for relief from.', enum: ['Flood', 'Tornado', 'Tropical Storm/Hurricane', 'Wildfire'] },
+                event: { type: Type.STRING, description: "The type of event the user is applying for relief from.", enum: ['Flood', 'Tornado', 'Tropical Storm/Hurricane', 'Wildfire', 'My disaster is not listed'] },
+                otherEvent: { type: Type.STRING, description: "The user-specified disaster if 'My disaster is not listed' is the event type." },
+                eventDate: { type: Type.STRING, description: "The date the disaster occurred, in YYYY-MM-DD format." },
+                evacuated: { type: Type.STRING, description: "Whether the user evacuated or plans to.", enum: ['Yes', 'No'] },
+                powerLoss: { type: Type.STRING, description: "Whether the user lost power for more than 4 hours.", enum: ['Yes', 'No'] },
+                powerLossDays: { type: Type.NUMBER, description: "The number of days the user was without power." },
+                additionalDetails: { type: Type.STRING, description: "Any additional details provided by the user about their situation." },
                 requestedAmount: { type: Type.NUMBER, description: 'The amount of financial relief the user is requesting.' },
             }
         }
@@ -283,7 +311,7 @@ export async function parseApplicationDetailsWithGemini(
 
   const prompt = `
     Parse the user's description of their situation into a structured JSON object for a relief application.
-    Extract any mentioned details that match the schema, including personal info, address, mobile number, preferred language, event details, and other profile information like employment start date, household size/income, and home ownership status.
+    Extract any mentioned details that match the schema, including personal info, address, event details (like evacuation status or power loss), and other profile information.
     
     Rules for address parsing:
     1. For addresses in the United States, validate and correct any misspellings in the street name, city, or state.
@@ -293,11 +321,10 @@ export async function parseApplicationDetailsWithGemini(
     3. Omit any keys for address components that are not present in the original string (like \`street2\`).
 
     Rules for other fields:
-    1. employmentStartDate: Must be in YYYY-MM-DD format. Infer the year if not specified (assume current year).
-    2. householdIncome: Extract as a number, ignoring currency symbols or commas.
-    3. homeowner: Should be "Yes" or "No".
+    1. eventDate, employmentStartDate: Must be in YYYY-MM-DD format. Infer the year if not specified (assume current year).
+    2. householdIncome, powerLossDays: Extract as a number, ignoring currency symbols or commas.
+    3. homeowner, evacuated, powerLoss: Should be "Yes" or "No".
     4. mobileNumber: Extract any phone number mentioned by the user.
-    5. preferredLanguage: Extract any preferred language for communication mentioned by the user.
 
     User's description: "${description}"
   `;
