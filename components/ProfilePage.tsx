@@ -91,6 +91,28 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
     mailingAddress: false,
     consent: false,
   });
+  
+  const { twelveMonthRemaining, lifetimeRemaining } = useMemo(() => {
+    if (applications.length === 0) {
+      return {
+        twelveMonthRemaining: 10000,
+        lifetimeRemaining: 50000,
+      };
+    }
+
+    // The most recent application is the last one in the array, which reflects the latest state.
+    const latestApplication = applications[applications.length - 1];
+    
+    return {
+      twelveMonthRemaining: latestApplication.twelveMonthGrantRemaining,
+      lifetimeRemaining: latestApplication.lifetimeGrantRemaining,
+    };
+  }, [applications]);
+
+  // Create a reversed list for display so newest applications appear first
+  const sortedApplicationsForDisplay = useMemo(() => {
+    return [...applications].reverse();
+  }, [applications]);
 
   const sectionHasErrors = useMemo(() => {
     // Contact
@@ -262,20 +284,44 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 <ChevronIcon isOpen={isApplicationsOpen} />
             </button>
             <div className={`transition-all duration-500 ease-in-out ${isApplicationsOpen ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-                <div className="space-y-4 pt-4">
+                <div className="bg-[#003a70]/50 p-4 rounded-lg mb-4 flex justify-around text-center border border-[#005ca0]">
+                    <div>
+                        <p className="text-sm text-gray-300 uppercase tracking-wider">12 Month Remaining</p>
+                        <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
+                            ${twelveMonthRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-sm text-gray-300 uppercase tracking-wider">Lifetime Remaining</p>
+                        <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
+                            ${lifetimeRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                    </div>
+                </div>
+                <div className="space-y-4">
                 {applications.length > 0 ? (
-                    applications.map(app => (
-                    <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[#004b8d] p-4 rounded-md flex justify-between items-center hover:bg-[#005ca0]/50 transition-colors duration-200">
-                        <div>
-                        <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">{app.event}</p>
-                        <p className="text-sm text-gray-300">Submitted: {app.submittedDate}</p>
+                    <>
+                        {sortedApplicationsForDisplay.map(app => (
+                        <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[#004b8d] p-4 rounded-md flex justify-between items-center hover:bg-[#005ca0]/50 transition-colors duration-200">
+                            <div>
+                            <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">{app.event}</p>
+                            <p className="text-sm text-gray-300">Submitted: {app.submittedDate}</p>
+                            </div>
+                            <div className="text-right">
+                            <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${app.requestedAmount.toFixed(2)}</p>
+                            <p className="text-sm text-gray-300">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
+                            </div>
+                        </button>
+                        ))}
+                        <div className="flex justify-center pt-4">
+                            <button 
+                                onClick={() => navigate('apply')} 
+                                className="bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-6 rounded-md transition-colors duration-200"
+                            >
+                                Apply Now
+                            </button>
                         </div>
-                        <div className="text-right">
-                        <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${app.requestedAmount.toFixed(2)}</p>
-                        <p className="text-sm text-gray-300">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
-                        </div>
-                    </button>
-                    ))
+                    </>
                 ) : (
                     <div className="text-center py-8 bg-[#003a70]/50 rounded-lg">
                         <p className="text-gray-300">You have not submitted any applications yet.</p>
