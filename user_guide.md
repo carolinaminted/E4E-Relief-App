@@ -46,7 +46,14 @@ The application is a guided, step‑by‑step form. Your progress is saved in th
 
 Apply for Relief Page:
 
-<img width="340" height="610" alt="image" src="https://github.com/user-attachments/assets/f42bec46-6b37-4197-9758-6d21eedf51c2" />
+<img width="325" height="617" alt="image" src="https://github.com/user-attachments/assets/8fff68c5-edc3-4858-989d-dac899423d43" />
+<img width="321" height="621" alt="image" src="https://github.com/user-attachments/assets/0fc04d3d-f463-4cf7-80b2-15e2b4f4634d" />
+<img width="326" height="619" alt="image" src="https://github.com/user-attachments/assets/7c0bb3f8-b964-434c-be08-bb99c7481c06" />
+<img width="316" height="615" alt="image" src="https://github.com/user-attachments/assets/766a3be0-bba5-49e8-a709-c0edf5fc3de4" />
+<img width="330" height="612" alt="image" src="https://github.com/user-attachments/assets/adb16fc7-3250-43b8-b3ae-9f432e4bdf52" />
+
+
+
 
 
 ## My Applications Page
@@ -61,6 +68,9 @@ Apply for Relief Page:
 - Update name, preferred language, and contact details.
 - Edit your addresses. The **Country** picker supports searching.
 - Save to keep changes for your current session.
+
+<img width="330" height="612" alt="image" src="https://github.com/user-attachments/assets/a9d7a406-90ef-416b-ada7-c33b28e35046" />
+<img width="327" height="615" alt="image" src="https://github.com/user-attachments/assets/5b9c4cf4-a5b5-43c3-96c9-56d3e5db9524" />
 
 
 ## Support Page
