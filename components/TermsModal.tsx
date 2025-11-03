@@ -1,14 +1,20 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 interface TermsModalProps {
   onClose: () => void;
 }
 
 const TermsModal: React.FC<TermsModalProps> = ({ onClose }) => {
-  return (
+  const modalRoot = document.getElementById('modal-root');
+  if (!modalRoot) return null; // Should not happen in normal execution
+
+  return createPortal(
     <div 
-      className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center"
+      className="fixed inset-0 bg-black bg-opacity-70 z-[100] flex justify-center items-center"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       <div 
         className="bg-[#003a70] rounded-lg shadow-xl p-8 w-full max-w-2xl m-4 relative border border-[#002a50] max-h-[80vh] flex flex-col"
@@ -43,7 +49,8 @@ const TermsModal: React.FC<TermsModalProps> = ({ onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    modalRoot
   );
 };
 

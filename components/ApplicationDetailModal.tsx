@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import type { Application } from '../types';
 
 interface ApplicationDetailModalProps {
@@ -18,11 +19,16 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({ applica
   const eventDisplay = application.event === 'My disaster is not listed' 
     ? application.otherEvent || 'Not specified' 
     : application.event;
+    
+  const modalRoot = document.getElementById('modal-root');
+  if (!modalRoot) return null; // Should not happen
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center"
+      className="fixed inset-0 bg-black bg-opacity-70 z-[100] flex justify-center items-center"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       <div 
         className="bg-[#004b8d] rounded-lg shadow-xl p-8 w-full max-w-lg m-4 relative border border-[#002a50]"
@@ -79,7 +85,8 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({ applica
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    modalRoot
   );
 };
 

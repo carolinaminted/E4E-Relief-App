@@ -63,8 +63,14 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile, 
     };
   });
 
-  const nextStep = () => setStep(prev => prev + 1);
-  const prevStep = () => setStep(prev => prev - 1);
+  const nextStep = () => {
+    window.scrollTo(0, 0);
+    setStep(prev => prev + 1);
+  };
+  const prevStep = () => {
+    window.scrollTo(0, 0);
+    setStep(prev => prev - 1);
+  };
   
   const updateProfileData = (newData: Partial<UserProfile>) => {
       setFormData(prev => ({ 

@@ -1,8 +1,6 @@
-
-
 import React, { useState, useCallback, useMemo } from 'react';
 import type { UserProfile, Application, EventData, EligibilityDecision } from './types';
-import { evaluateApplicationEligibility } from './services/geminiService';
+import { evaluateApplicationEligibility, getAIAssistedDecision } from './services/geminiService';
 // FIX: Corrected the import path for ApplicationFormData. It should be imported from './types' instead of a component file.
 import type { ApplicationFormData } from './types';
 
@@ -173,7 +171,6 @@ function App() {
     
     const tempId = `APP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
-    // Determine current grant remaining amounts from the last application or defaults
     const usersPastApplications = applications[currentUser.email] || [];
     const lastApplication = usersPastApplications.length > 0 ? usersPastApplications[usersPastApplications.length - 1] : null;
     
@@ -183,8 +180,8 @@ function App() {
     const currentTwelveMonthRemaining = lastApplication ? lastApplication.twelveMonthGrantRemaining : initialTwelveMonthMax;
     const currentLifetimeRemaining = lastApplication ? lastApplication.lifetimeGrantRemaining : initialLifetimeMax;
 
-    // Call the rules engine to get the decision
-    const eligibilityResult = await evaluateApplicationEligibility({
+    // Step 1: Call the local rules engine to get a preliminary decision
+    const preliminaryDecision = evaluateApplicationEligibility({
         id: tempId,
         employmentStartDate: appFormData.profileData.employmentStartDate,
         eventData: appFormData.eventData,
@@ -192,7 +189,20 @@ function App() {
         currentLifetimeRemaining: currentLifetimeRemaining,
     });
     
-    console.log("Eligibility Decision:", eligibilityResult);
+    console.log("Preliminary Rules Engine Decision:", preliminaryDecision);
+
+    // Step 2: Send the preliminary decision and application data to the AI for a final review
+    const finalDecision = await getAIAssistedDecision(
+      { 
+        eventData: appFormData.eventData,
+        currentTwelveMonthRemaining: currentTwelveMonthRemaining,
+        currentLifetimeRemaining: currentLifetimeRemaining,
+      },
+      preliminaryDecision
+    );
+
+    console.log("Final AI-Assisted Decision:", finalDecision);
+
 
     const getStatusFromDecision = (decision: EligibilityDecision['decision']): Application['status'] => {
         if (decision === 'Approved') return 'Awarded';
@@ -200,8 +210,6 @@ function App() {
         return 'Submitted'; // for 'Review'
     };
 
-
-    // FIX: Coerce empty string values from form data to undefined to match the Application type, which uses undefined for optional fields instead of empty strings.
     const newApplication: Application = {
       id: tempId,
       profileSnapshot: appFormData.profileData,
@@ -213,11 +221,11 @@ function App() {
       evacuationNights: appFormData.eventData.evacuationNights || undefined,
       powerLossDays: appFormData.eventData.powerLossDays || undefined,
       submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
-      status: getStatusFromDecision(eligibilityResult.decision),
-      reasons: eligibilityResult.reasons,
-      decisionedDate: eligibilityResult.decisionedDate,
-      twelveMonthGrantRemaining: eligibilityResult.remaining_12mo,
-      lifetimeGrantRemaining: eligibilityResult.remaining_lifetime,
+      status: getStatusFromDecision(finalDecision.decision),
+      reasons: finalDecision.reasons,
+      decisionedDate: finalDecision.decisionedDate,
+      twelveMonthGrantRemaining: finalDecision.remaining_12mo,
+      lifetimeGrantRemaining: finalDecision.remaining_lifetime,
       shareStory: appFormData.agreementData.shareStory ?? false,
       receiveAdditionalInfo: appFormData.agreementData.receiveAdditionalInfo ?? false,
     };
@@ -227,12 +235,11 @@ function App() {
       [currentUser.email]: [...(prev[currentUser.email] || []), newApplication],
     }));
     
-    // If the user updated their profile in the application, update their main profile too
     if (JSON.stringify(appFormData.profileData) !== JSON.stringify(currentUser)) {
         handleProfileUpdate(appFormData.profileData);
     }
     
-    setApplicationDraft(null); // Clear the draft after submission
+    setApplicationDraft(null);
     setLastSubmittedApp(newApplication);
     setPage('submissionSuccess');
 
@@ -244,11 +251,9 @@ function App() {
         const newDraft = { ...prevDraft };
 
         if (functionName === 'updateUserProfile') {
-            // FIX: Cast prevProfile to Partial<UserProfile> to allow safe access to nested properties like primaryAddress
             const prevProfile: Partial<UserProfile> = prevDraft?.profileData || {};
             const newProfile = { ...prevProfile, ...args };
 
-            // Deep merge for nested address object
             if (args.primaryAddress) {
                 newProfile.primaryAddress = {
                     ...(prevProfile.primaryAddress || {}),
@@ -270,7 +275,6 @@ function App() {
     if (!currentUser) {
       return (
         <>
-          {/* Logo container with a fixed proportion of the viewport height */}
           <div className="w-full flex justify-center items-center h-[35vh]">
             <img 
               src="https://gateway.pinata.cloud/ipfs/bafybeihjhfybcxtlj6r4u7c6jdgte7ehcrctaispvtsndkvgc3bmevuvqi" 
@@ -279,7 +283,6 @@ function App() {
             />
           </div>
           
-          {/* Form container */}
           <div className="w-full max-w-md">
             {page === 'register' ? (
               <RegisterPage onRegister={handleRegister} switchToLogin={() => setPage('login')} />

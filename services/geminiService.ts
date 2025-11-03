@@ -1,5 +1,3 @@
-
-
 import { GoogleGenAI, Chat, FunctionDeclaration, Type } from "@google/genai";
 import type { Application, Address, UserProfile, ApplicationFormData, EventData, EligibilityDecision } from '../types';
 
@@ -129,7 +127,7 @@ ${applicationList}
   });
 }
 
-export async function evaluateApplicationEligibility(
+export function evaluateApplicationEligibility(
   appData: {
     id: string;
     employmentStartDate: string;
@@ -137,92 +135,82 @@ export async function evaluateApplicationEligibility(
     currentTwelveMonthRemaining: number;
     currentLifetimeRemaining: number;
   }
-): Promise<EligibilityDecision> {
+): EligibilityDecision {
   const { eventData, currentTwelveMonthRemaining, currentLifetimeRemaining, employmentStartDate } = appData;
   const today = new Date();
-  // Set time to 0 to compare dates only
   today.setHours(0, 0, 0, 0);
 
   const ninetyDaysAgo = new Date(today);
   ninetyDaysAgo.setDate(today.getDate() - 90);
+  const ninetyDaysAgoStr = ninetyDaysAgo.toISOString().split('T')[0];
 
   const policy_hits: EligibilityDecision['policy_hits'] = [];
   const reasons: string[] = [];
   let decision: EligibilityDecision['decision'] = 'Approved';
 
-  // --- Normalization & Validation ---
   const eventDateStr = eventData.eventDate || '';
   const eventDate = eventDateStr ? new Date(eventDateStr) : null;
   if (eventDate) {
-    // Also set time to 0 for correct date comparisons
     eventDate.setHours(0,0,0,0);
   }
 
   const requestedAmount = Number(eventData.requestedAmount) || 0;
   const normalizedEvent = eventData.event === 'My disaster is not listed' ? (eventData.otherEvent || '').trim() : (eventData.event || '').trim();
   
-  // --- Rule Evaluation (Denial rules first) ---
-  
-  // R1: Event specified
   if (!normalizedEvent) {
     decision = 'Denied';
     reasons.push("An event type must be selected. If 'My disaster is not listed' is chosen, the specific event must be provided.");
-    policy_hits.push({ rule_id: 'R1', passed: false, detail: 'Event field (201/202) is empty.' });
+    policy_hits.push({ rule_id: 'R1', passed: false, detail: `Event field (201: ${eventData.event}, 202: ${eventData.otherEvent}) resulted in an empty event name.` });
   } else {
-    policy_hits.push({ rule_id: 'R1', passed: true, detail: 'Event specified.' });
+    policy_hits.push({ rule_id: 'R1', passed: true, detail: `Event specified as '${normalizedEvent}'.` });
   }
 
-  // R2: Event date recency
   if (!eventDate || isNaN(eventDate.getTime()) || eventDate < ninetyDaysAgo || eventDate > today) {
     decision = 'Denied';
-    reasons.push(`Event date is older than 90 days or invalid. Event must be between ${ninetyDaysAgo.toISOString().split('T')[0]} and today.`);
-    policy_hits.push({ rule_id: 'R2', passed: false, detail: `Event date ${eventDateStr} is not within the last 90 days.` });
+    reasons.push(`Event date is older than 90 days or invalid. Event must be between ${ninetyDaysAgoStr} and today.`);
+    policy_hits.push({ rule_id: 'R2', passed: false, detail: `Event date '${eventDateStr}' is outside the 90-day window starting from '${ninetyDaysAgoStr}'.` });
   } else {
-    policy_hits.push({ rule_id: 'R2', passed: true, detail: 'Event date is recent.' });
+    policy_hits.push({ rule_id: 'R2', passed: true, detail: `Event date '${eventDateStr}' is recent.` });
   }
 
-  // R3: Employment timeline
   const empStartDate = employmentStartDate ? new Date(employmentStartDate) : null;
   if (empStartDate) empStartDate.setHours(0,0,0,0);
   if (!empStartDate || isNaN(empStartDate.getTime()) || (eventDate && empStartDate > eventDate)) {
     decision = 'Denied';
     reasons.push("Employment start date is invalid or after the event date.");
-    policy_hits.push({ rule_id: 'R3', passed: false, detail: 'Employment start date is invalid or after event date.' });
+    policy_hits.push({ rule_id: 'R3', passed: false, detail: `Employment start date '${employmentStartDate}' is after event date '${eventDateStr}'.` });
   } else {
     policy_hits.push({ rule_id: 'R3', passed: true, detail: 'Employment start date is valid.' });
   }
 
-  // R4 & R5: Requested Amount
   if (requestedAmount <= 0) {
      decision = 'Denied';
      reasons.push(`Requested amount must be greater than zero.`);
-     policy_hits.push({ rule_id: 'R4/R5', passed: false, detail: 'Requested amount is not greater than zero.' });
+     policy_hits.push({ rule_id: 'R4/R5', passed: false, detail: `Requested amount of $${requestedAmount.toFixed(2)} is not greater than zero.` });
   } else if (requestedAmount > 10000) {
     decision = 'Denied';
     reasons.push(`Requested amount of $${requestedAmount.toFixed(2)} exceeds the maximum of $10,000.`);
-    policy_hits.push({ rule_id: 'R5', passed: false, detail: 'Requested amount exceeds absolute cap of $10,000.' });
+    policy_hits.push({ rule_id: 'R5', passed: false, detail: `Requested amount $${requestedAmount.toFixed(2)} exceeds absolute cap of $10,000.` });
   } else if (requestedAmount > currentTwelveMonthRemaining) {
     decision = 'Denied';
     reasons.push(`Requested amount of $${requestedAmount.toFixed(2)} exceeds the remaining 12-month limit of $${currentTwelveMonthRemaining.toFixed(2)}.`);
-    policy_hits.push({ rule_id: 'R4', passed: false, detail: 'Requested amount exceeds 12-month limit.' });
+    policy_hits.push({ rule_id: 'R4', passed: false, detail: `Requested amount $${requestedAmount.toFixed(2)} exceeds 12-month limit $${currentTwelveMonthRemaining.toFixed(2)}.` });
   } else if (requestedAmount > currentLifetimeRemaining) {
     decision = 'Denied';
     reasons.push(`Requested amount of $${requestedAmount.toFixed(2)} exceeds the remaining lifetime limit of $${currentLifetimeRemaining.toFixed(2)}.`);
-    policy_hits.push({ rule_id: 'R4', passed: false, detail: 'Requested amount exceeds lifetime limit.' });
+    policy_hits.push({ rule_id: 'R4', passed: false, detail: `Requested amount $${requestedAmount.toFixed(2)} exceeds lifetime limit $${currentLifetimeRemaining.toFixed(2)}.` });
   } else {
-    policy_hits.push({ rule_id: 'R4', passed: true, detail: 'Requested amount is within all limits.' });
-    policy_hits.push({ rule_id: 'R5', passed: true, detail: 'Requested amount is within absolute cap.' });
+    policy_hits.push({ rule_id: 'R4', passed: true, detail: `Requested amount $${requestedAmount.toFixed(2)} is within all limits.` });
+    policy_hits.push({ rule_id: 'R5', passed: true, detail: `Requested amount $${requestedAmount.toFixed(2)} is within absolute cap.` });
   }
 
-  // --- Rule Evaluation (Review rules, only if not already Denied) ---
   if (decision !== 'Denied') {
-    // R6: Visibility-consistency
     if (eventData.evacuated === 'Yes') {
       const missingEvacFields = !eventData.evacuatingFromPrimary || !eventData.stayedWithFamilyOrFriend || !eventData.evacuationStartDate || !eventData.evacuationNights || eventData.evacuationNights <= 0;
       if (missingEvacFields) {
         decision = 'Review';
         reasons.push("Evacuation was indicated, but required details (e.g., evacuation start date, number of nights) are missing or invalid.");
-        policy_hits.push({ rule_id: 'R6', passed: false, detail: 'Missing conditionally-required evacuation fields (205, 207, 208, 209).' });
+        policy_hits.push({ rule_id: 'R6', passed: false, detail: 'Evacuation indicated (204: Yes) but required fields are missing or invalid.' });
       } else {
         policy_hits.push({ rule_id: 'R6', passed: true, detail: 'Evacuation fields are complete.' });
       }
@@ -232,25 +220,24 @@ export async function evaluateApplicationEligibility(
       if (!eventData.powerLossDays || eventData.powerLossDays <= 0) {
         decision = 'Review';
         reasons.push("Power loss was indicated, but the number of days is missing or invalid.");
-        policy_hits.push({ rule_id: 'R6', passed: false, detail: 'Missing or invalid power loss days (211).' });
+        policy_hits.push({ rule_id: 'R6', passed: false, detail: `Power loss indicated (210: Yes) but powerLossDays (211: ${eventData.powerLossDays || 'N/A'}) is invalid.` });
       } else {
         policy_hits.push({ rule_id: 'R6', passed: true, detail: 'Power loss fields are complete.' });
       }
     }
   }
 
-  // R7: Sanity
   let normalizedPowerLossDays = Number(eventData.powerLossDays) || 0;
   if (eventData.powerLoss === 'No' && normalizedPowerLossDays > 0) {
+    const originalDays = normalizedPowerLossDays;
     normalizedPowerLossDays = 0;
-    policy_hits.push({ rule_id: 'R7', passed: true, detail: 'Coerced powerLossDays to 0 because powerLoss was No.' });
+    policy_hits.push({ rule_id: 'R7', passed: true, detail: `PowerLoss was 'No' (210), but powerLossDays was ${originalDays}. Coerced to 0.` });
   }
 
   if (reasons.length === 0 && decision === 'Approved') {
     reasons.push("Application meets all automatic approval criteria.");
   }
   
-  // --- Award & Remaining Grant Updates ---
   let recommended_award = 0;
   let remaining_12mo = currentTwelveMonthRemaining;
   let remaining_lifetime = currentLifetimeRemaining;
@@ -277,6 +264,94 @@ export async function evaluateApplicationEligibility(
     decisionedDate: today.toISOString().split('T')[0]
   };
 }
+
+const finalDecisionSchema = {
+    type: Type.OBJECT,
+    properties: {
+        finalDecision: { type: Type.STRING, enum: ['Approved', 'Denied'], description: "Your final decision." },
+        finalReason: { type: Type.STRING, description: "A single, concise, and empathetic reason for your final decision. This will be shown to the user." },
+        finalAward: { type: Type.NUMBER, description: "The calculated award amount if the decision is 'Approved', otherwise 0. It is the minimum of the requested amount, the 12-month remaining balance, and the lifetime remaining balance." }
+    },
+    required: ["finalDecision", "finalReason", "finalAward"]
+};
+
+
+export async function getAIAssistedDecision(
+    appData: {
+        eventData: EventData,
+        currentTwelveMonthRemaining: number,
+        currentLifetimeRemaining: number,
+    },
+    preliminaryDecision: EligibilityDecision
+): Promise<EligibilityDecision> {
+    const prompt = `
+        You are a senior grant approver AI. Your task is to perform a final review of a relief application.
+        An automated, deterministic rules engine has already processed the application and provided a preliminary decision. You have the final say.
+
+        **Instructions:**
+        1.  **Review all provided information holistically.**
+        2.  **Make a final decision:** 'Approved' or 'Denied'. Your decision is final.
+        3.  **If you decide to approve**, you MUST calculate the final award amount. The award is the MINIMUM of these three values: the 'requestedAmount', the '12-Month Remaining' balance, and the 'Lifetime Remaining' balance. If you deny, the award is 0.
+        4.  **Write a single, concise, and empathetic reason for your decision.** This will be shown directly to the applicant.
+            -   **For Approvals:** Start with a positive confirmation. State the approved event and include the calculated award amount. Example: "Congratulations, your application for relief from the Flood has been approved for an award of $1500.00."
+            -   **For Denials:** Be clear and direct, but empathetic. State the primary reason for the denial based on the preliminary findings. Example: "We're sorry, but your application could not be approved because the requested amount exceeds your available lifetime grant limit."
+        5.  **Your response MUST be in JSON format and adhere to the specified schema.**
+
+        ---
+        APPLICANT'S SUBMITTED DATA:
+        ${JSON.stringify(appData.eventData, null, 2)}
+        
+        CURRENT GRANT BALANCES:
+        - 12-Month Remaining: $${appData.currentTwelveMonthRemaining}
+        - Lifetime Remaining: $${appData.currentLifetimeRemaining}
+
+        ---
+        PRELIMINARY AUTOMATED DECISION:
+        ${JSON.stringify(preliminaryDecision, null, 2)}
+        ---
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: finalDecisionSchema,
+            },
+        });
+
+        const jsonString = response.text.trim();
+        const aiResponse = JSON.parse(jsonString) as { finalDecision: 'Approved' | 'Denied', finalReason: string, finalAward: number };
+
+        const finalRecommendedAward = aiResponse.finalAward;
+        let finalRemaining12mo = appData.currentTwelveMonthRemaining;
+        let finalRemainingLifetime = appData.currentLifetimeRemaining;
+
+        if (aiResponse.finalDecision === 'Approved') {
+            finalRemaining12mo -= finalRecommendedAward;
+            finalRemainingLifetime -= finalRecommendedAward;
+        }
+
+        return {
+            ...preliminaryDecision, // Carry over normalized data and policy hits for audit
+            decision: aiResponse.finalDecision,
+            reasons: [aiResponse.finalReason], // Use the AI's reason as the definitive one
+            recommended_award: finalRecommendedAward,
+            remaining_12mo: finalRemaining12mo,
+            remaining_lifetime: finalRemainingLifetime,
+        };
+
+    } catch (error) {
+        console.error("Gemini final decision failed:", error);
+        // Fallback: If AI fails, trust the preliminary decision to avoid halting the process
+        return {
+            ...preliminaryDecision,
+            reasons: [...preliminaryDecision.reasons, "AI final review failed; this decision is based on the automated rules engine only."],
+        };
+    }
+}
+
 
 const addressJsonSchema = {
     type: Type.OBJECT,
