@@ -1,6 +1,6 @@
 import React from 'react';
 
-type Page = 'home' | 'apply' | 'profile' | 'support' | 'tokenUsage';
+type Page = 'home' | 'apply' | 'profile' | 'support' | 'tokenUsage' | 'faq' | 'paymentOptions';
 
 interface SupportPageProps {
   navigate: (page: Page) => void;
@@ -48,7 +48,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ navigate }) => {
             <SubActionCard 
                 title="FAQs" 
                 description="Find answers to common questions." 
-                onClick={() => {}} 
+                onClick={() => navigate('faq')} 
             />
             <SubActionCard 
                 title="View Token Usage" 
@@ -58,7 +58,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ navigate }) => {
             <SubActionCard 
                 title="Payment Options" 
                 description="Learn how grants are disbursed." 
-                onClick={() => {}} 
+                onClick={() => navigate('paymentOptions')} 
             />
         </div>
         

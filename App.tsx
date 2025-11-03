@@ -15,9 +15,11 @@ import SupportPage from './components/SupportPage';
 import SubmissionSuccessPage from './components/SubmissionSuccessPage';
 import ChatbotWidget from './components/ChatbotWidget';
 import TokenUsagePage from './components/TokenUsagePage';
+import FAQPage from './components/FAQPage';
+import PaymentOptionsPage from './components/PaymentOptionsPage';
 
 
-type Page = 'login' | 'register' | 'home' | 'apply' | 'profile' | 'support' | 'submissionSuccess' | 'tokenUsage';
+type Page = 'login' | 'register' | 'home' | 'apply' | 'profile' | 'support' | 'submissionSuccess' | 'tokenUsage' | 'faq' | 'paymentOptions';
 
 // --- MOCK DATABASE ---
 const initialUsers: Record<string, UserProfile & { passwordHash: string }> = {
@@ -315,6 +317,10 @@ function App() {
       case 'submissionSuccess':
         if (!lastSubmittedApp) return <HomePage navigate={navigate} />;
         return <SubmissionSuccessPage application={lastSubmittedApp} onGoToProfile={() => setPage('profile')} />;
+      case 'faq':
+        return <FAQPage navigate={navigate} />;
+      case 'paymentOptions':
+        return <PaymentOptionsPage navigate={navigate} />;
       case 'home':
       default:
         return <HomePage navigate={navigate} />;
