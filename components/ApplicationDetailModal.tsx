@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import type { Application } from '../types';
 
 interface ApplicationDetailModalProps {
@@ -15,10 +16,19 @@ const statusStyles: Record<Application['status'], string> = {
 const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({ application, onClose }) => {
   if (!application) return null;
 
-  return (
+  const eventDisplay = application.event === 'My disaster is not listed' 
+    ? application.otherEvent || 'Not specified' 
+    : application.event;
+    
+  const modalRoot = document.getElementById('modal-root');
+  if (!modalRoot) return null; // Should not happen
+
+  return createPortal(
     <div 
-      className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center"
+      className="fixed inset-0 bg-black bg-opacity-70 z-[100] flex justify-center items-center"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       <div 
         className="bg-[#004b8d] rounded-lg shadow-xl p-8 w-full max-w-lg m-4 relative border border-[#002a50]"
@@ -57,23 +67,26 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({ applica
           </div>
           <div className="flex justify-between border-b border-[#002a50] pb-2">
             <span className="font-semibold text-white opacity-70">Event Type:</span>
-            <span>{application.event}</span>
+            <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">{eventDisplay}</span>
           </div>
-          <div className="flex justify-between border-b border-[#002a50] pb-2">
+          <div className="flex justify-between pb-2 border-b border-[#002a50]">
             <span className="font-semibold text-white opacity-70">Requested Amount:</span>
             <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${application.requestedAmount.toFixed(2)}</span>
           </div>
-           <div className="flex justify-between border-b border-[#002a50] pb-2">
-            <span className="font-semibold text-white opacity-70">12 Month Grant Max:</span>
-            <span>${application.twelveMonthGrantMax.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="font-semibold text-white opacity-70">Lifetime Grant Max:</span>
-            <span>${application.lifetimeGrantMax.toFixed(2)}</span>
-          </div>
+           {application.reasons && application.reasons.length > 0 && (
+            <div className="pt-2">
+              <h3 className="font-semibold text-white opacity-70 mb-2">Decision Reasons:</h3>
+              <ul className="list-disc list-inside space-y-1 text-sm text-gray-300 bg-[#003a70]/50 p-3 rounded-md">
+                {application.reasons.map((reason, index) => (
+                  <li key={index}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </div>,
+    modalRoot
   );
 };
 

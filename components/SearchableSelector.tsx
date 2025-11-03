@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import RequiredIndicator from './RequiredIndicator';
 
 interface SearchableSelectorProps {
   id: string;
@@ -76,8 +77,8 @@ const SearchableSelector: React.FC<SearchableSelectorProps> = ({ id, label, valu
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <label htmlFor={id} className="block text-sm font-medium text-white mb-1">
-        {label} {required && <span className="text-red-400">*</span>}
+      <label htmlFor={id} className="flex items-center text-sm font-medium text-white mb-1">
+        {label} <RequiredIndicator required={required} isMet={!!value} />
       </label>
       <input
         id={id}

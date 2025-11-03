@@ -8,8 +8,8 @@ interface SubmissionSuccessPageProps {
 
 const SubmissionSuccessPage: React.FC<SubmissionSuccessPageProps> = ({ application, onGoToProfile }) => {
   return (
-    <div className="p-8 max-w-2xl mx-auto text-center flex flex-col items-center justify-center h-full">
-      <div className="bg-[#004b8d] p-10 rounded-lg shadow-lg">
+    <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+      <div className="w-full max-w-2xl bg-[#004b8d] p-10 rounded-lg shadow-lg">
         <svg className="w-16 h-16 text-[#edda26] mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>

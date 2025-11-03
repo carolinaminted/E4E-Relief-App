@@ -1,9 +1,12 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import type { Chat } from '@google/genai';
-import { ChatMessage, MessageRole, Application } from '../types';
+// FIX: Separated type and value imports for ChatMessage, MessageRole, and Application.
+import { MessageRole } from '../types';
+import type { ChatMessage, Application } from '../types';
 import { createChatSession } from '../services/geminiService';
 import ChatWindow from './ChatWindow';
 import ChatInput from './ChatInput';
+import { logEvent as logTokenEvent, estimateTokens } from '../services/tokenTracker';
 
 interface ChatbotWidgetProps {
   applications: Application[];
@@ -17,10 +20,12 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications, onChatbotAc
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const chatSessionRef = useRef<Chat | null>(null);
+  const chatTokenSessionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
         chatSessionRef.current = createChatSession(applications);
+        chatTokenSessionIdRef.current = `ai-chat-${Math.random().toString(36).substr(2, 9)}`;
     }
   }, [isOpen, applications]);
 
@@ -30,6 +35,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications, onChatbotAc
     setIsLoading(true);
     const userMessage: ChatMessage = { role: MessageRole.USER, content: userInput };
     setMessages(prev => [...prev, userMessage]);
+    const inputTokens = estimateTokens(userInput);
 
     if (!chatSessionRef.current) {
         chatSessionRef.current = createChatSession(applications);
@@ -92,6 +98,17 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications, onChatbotAc
                 });
             }
         }
+      }
+      
+      const outputTokens = estimateTokens(modelResponseText);
+      if (chatTokenSessionIdRef.current) {
+        logTokenEvent({
+            feature: 'AI Assistant',
+            model: 'gemini-2.5-flash',
+            inputTokens,
+            outputTokens,
+            sessionId: chatTokenSessionIdRef.current,
+        });
       }
 
     } catch (error) {

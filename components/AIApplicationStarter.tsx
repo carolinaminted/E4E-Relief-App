@@ -1,16 +1,15 @@
 
 import React, { useState } from 'react';
-import { parseApplicationDetailsWithGemini } from '../services/geminiService';
 import type { ApplicationFormData } from '../types';
 
 interface AIApplicationStarterProps {
-  onDetailsParsed: (parsedDetails: Partial<ApplicationFormData>) => void;
+  onParse: (description: string) => Promise<void>;
+  isLoading: boolean;
   variant?: 'boxed' | 'underline';
 }
 
-const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onDetailsParsed, variant = 'boxed' }) => {
+const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onParse, isLoading, variant = 'boxed' }) => {
   const [descriptionInput, setDescriptionInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -19,20 +18,16 @@ const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onDetailsPa
       setError('Please describe your situation to get started.');
       return;
     }
-    setIsLoading(true);
     setError('');
     setIsSuccess(false);
     try {
-      const parsedDetails = await parseApplicationDetailsWithGemini(descriptionInput);
-      onDetailsParsed(parsedDetails);
+      await onParse(descriptionInput);
       setDescriptionInput(''); 
       setIsSuccess(true);
       setTimeout(() => setIsSuccess(false), 5000); // Clear after 5 seconds
     } catch (e) {
-      console.error("Failed to parse application details:", e);
+      console.error("AIApplicationStarter caught error during parse:", e);
       setError('Could not extract details. Please try again or fill fields manually.');
-    } finally {
-      setIsLoading(false);
     }
   };
   
@@ -50,9 +45,9 @@ const AIApplicationStarter: React.FC<AIApplicationStarterProps> = ({ onDetailsPa
   return (
     <div className="bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0]">
       <p className="text-sm text-white mb-2">
-        Describe your situation, including the event, impact, amount needed, household size/income, home ownership, mobile number, and preferred language. Our AI will pre-fill your application.
+        Describe your situation below and our AI relief Assistant will pre-fill your application.
       </p>
-      <div className="flex flex-col md:flex-row gap-2">
+      <div className="flex flex-col md:flex-row md:items-end gap-2">
         <textarea
           id="ai-starter-input"
           value={descriptionInput}

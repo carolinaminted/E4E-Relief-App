@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Application, UserProfile, ApplicationFormData } from '../types';
+import type { Application, UserProfile, ApplicationFormData, EventData } from '../types';
 
 // Import step components
 import ApplyContactPage from './ApplyContactPage';
@@ -21,7 +21,7 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile, 
   const [formData, setFormData] = useState<ApplicationFormData>(() => {
     // FIX: Cast draftProfile to Partial<UserProfile> to allow safe access to nested properties like primaryAddress
     const draftProfile: Partial<UserProfile> = applicationDraft?.profileData || {};
-    const draftEvent = applicationDraft?.eventData || {};
+    const draftEvent: Partial<EventData> = applicationDraft?.eventData || {};
 
     const initialProfile = {
       ...userProfile,
@@ -36,8 +36,19 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile, 
       },
     };
 
-    const initialEvent = {
+    const initialEvent: EventData = {
         event: '',
+        otherEvent: '',
+        eventDate: '',
+        evacuated: '',
+        evacuatingFromPrimary: '',
+        evacuationReason: '',
+        stayedWithFamilyOrFriend: '',
+        evacuationStartDate: '',
+        evacuationNights: '',
+        powerLoss: '',
+        powerLossDays: '',
+        additionalDetails: '',
         requestedAmount: 0,
         ...draftEvent,
     };
@@ -46,14 +57,20 @@ const ApplyPage: React.FC<ApplyPageProps> = ({ navigate, onSubmit, userProfile, 
         profileData: initialProfile,
         eventData: initialEvent,
         agreementData: {
-            shareStory: false,
-            receiveAdditionalInfo: false,
+            shareStory: null,
+            receiveAdditionalInfo: null,
         },
     };
   });
 
-  const nextStep = () => setStep(prev => prev + 1);
-  const prevStep = () => setStep(prev => prev - 1);
+  const nextStep = () => {
+    window.scrollTo(0, 0);
+    setStep(prev => prev + 1);
+  };
+  const prevStep = () => {
+    window.scrollTo(0, 0);
+    setStep(prev => prev - 1);
+  };
   
   const updateProfileData = (newData: Partial<UserProfile>) => {
       setFormData(prev => ({ 

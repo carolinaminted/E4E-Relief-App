@@ -1,11 +1,16 @@
+
+
 import React, { useState, useMemo } from 'react';
 import type { UserProfile, Address, ApplicationFormData } from '../types';
 import CountrySelector from './CountrySelector';
-import AddressHelper from './AddressHelper';
 import SearchableSelector from './SearchableSelector';
 import { employmentTypes, languages } from '../data/appData';
 import { formatPhoneNumber } from '../utils/formatting';
 import AIApplicationStarter from './AIApplicationStarter';
+import RequiredIndicator from './RequiredIndicator';
+import LoadingOverlay from './LoadingOverlay';
+import { parseApplicationDetailsWithGemini } from '../services/geminiService';
+import { FormInput, FormRadioGroup, AddressFields } from './FormControls';
 
 interface ApplyContactPageProps {
   formData: UserProfile;
@@ -13,51 +18,6 @@ interface ApplyContactPageProps {
   nextStep: () => void;
   onAIParsed: (data: Partial<ApplicationFormData>) => void;
 }
-
-// Re-usable form components with updated styling
-const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string, required?: boolean, error?: string }> = ({ label, id, required, error, ...props }) => (
-    <div>
-        <label htmlFor={id} className="block text-sm font-medium text-white mb-1">
-            {label} {required && <span className="text-red-400">*</span>}
-        </label>
-        <input id={id} {...props} className={`w-full bg-transparent border-0 border-b p-2 text-white focus:outline-none focus:ring-0 ${error ? 'border-red-500' : 'border-[#005ca0] focus:border-[#ff8400]'} disabled:bg-transparent disabled:border-b disabled:border-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed`} />
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-    </div>
-);
-
-
-const FormRadioGroup: React.FC<{ legend: string, name: string, options: string[], value: string, onChange: (value: any) => void, required?: boolean, error?: string }> = ({ legend, name, options, value, onChange, required, error }) => (
-    <div>
-        <p className={`block text-sm font-medium text-white mb-1 ${error ? 'text-red-400' : ''}`}>
-            {legend} {required && <span className="text-red-400">*</span>}
-        </p>
-        <div className="flex gap-4 mt-2">
-            {options.map(option => (
-                <label key={option} className="flex items-center cursor-pointer">
-                    <input type="radio" name={name} value={option} checked={value === option} onChange={(e) => onChange(e.target.value)} className="form-radio h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 focus:ring-[#ff8400]" />
-                    <span className="ml-2 text-white">{option}</span>
-                </label>
-            ))}
-        </div>
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-    </div>
-);
-
-
-const AddressFields: React.FC<{ address: Address, onUpdate: (field: keyof Address, value: string) => void, onBulkUpdate: (parsedAddress: Partial<Address>) => void, prefix: string, errors: Record<string, string> }> = ({ address, onUpdate, onBulkUpdate, prefix, errors }) => (
-    <>
-        <AddressHelper onAddressParsed={onBulkUpdate} variant="underline" />
-        <CountrySelector id={`${prefix}Country`} required value={address.country} onUpdate={value => onUpdate('country', value)} variant="underline" error={errors.country} />
-        <FormInput label="Street 1" id={`${prefix}Street1`} required value={address.street1} onChange={e => onUpdate('street1', e.target.value)} error={errors.street1} />
-        <FormInput label="Street 2" id={`${prefix}Street2`} value={address.street2 || ''} onChange={e => onUpdate('street2', e.target.value)} />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormInput label="City" id={`${prefix}City`} required value={address.city} onChange={e => onUpdate('city', e.target.value)} error={errors.city} />
-            <FormInput label="State or Province" id={`${prefix}State`} required value={address.state} onChange={e => onUpdate('state', e.target.value)} error={errors.state} />
-            <FormInput label="ZIP/Postal Code" id={`${prefix}Zip`} required value={address.zip} onChange={e => onUpdate('zip', e.target.value)} error={errors.zip} />
-        </div>
-    </>
-);
-
 
 // --- UI Icons ---
 const ChevronIcon: React.FC<{ isOpen: boolean }> = ({ isOpen }) => (
@@ -84,6 +44,7 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
     mailingAddress: false,
     consent: false,
   });
+  const [isAIParsing, setIsAIParsing] = useState(false);
 
   const sectionHasErrors = useMemo(() => {
     // Contact
@@ -141,11 +102,12 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
     };
     updateFormData({ [addressType]: updatedAddress });
 
-    const errorKey = `${addressType}.${field}`;
-     if (errors[addressType]?.[field]) {
+    // FIX: Used type assertion to prevent 'symbol' cannot be used as an index type error.
+     if (errors[addressType]?.[field as string]) {
         setErrors(prev => {
             const newAddrErrors = { ...prev[addressType] };
-            delete newAddrErrors[field];
+            // FIX: Used type assertion for deleting property.
+            delete newAddrErrors[field as string];
             return { ...prev, [addressType]: newAddrErrors };
         });
     }
@@ -164,6 +126,20 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
     }
   };
   
+  const handleAIParse = async (description: string) => {
+    setIsAIParsing(true);
+    try {
+      const parsedDetails = await parseApplicationDetailsWithGemini(description);
+      onAIParsed(parsedDetails);
+    } catch (e) {
+      console.error("AI Parsing failed in parent component:", e);
+      // Re-throw the error so the child component can catch it and display a local error message.
+      throw e;
+    } finally {
+      setIsAIParsing(false);
+    }
+  };
+
   const validate = (): boolean => {
     const newErrors: Record<string, any> = {};
     const sectionsToOpen: Partial<Record<keyof typeof openSections, boolean>> = {};
@@ -233,6 +209,7 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
 
   return (
     <div className="space-y-4">
+        {isAIParsing && <LoadingOverlay message="We are applying your details to the application now..." />}
 
         {/* AI Application Starter Section */}
         <fieldset className="border-b border-[#005ca0] pb-4">
@@ -244,8 +221,28 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
             </button>
             <div id="ai-starter-section" className={`transition-all duration-500 ease-in-out ${openSections.aiStarter ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="pt-4">
-                    <AIApplicationStarter onDetailsParsed={onAIParsed} variant="underline" />
+                    <AIApplicationStarter 
+                        onParse={handleAIParse}
+                        isLoading={isAIParsing}
+                        variant="underline"
+                    />
                 </div>
+                {openSections.aiStarter && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('aiStarter')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="ai-starter-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
         
@@ -267,6 +264,22 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
                     <FormInput label="Email" id="email" required value={formData.email} disabled />
                     <FormInput label="Mobile Number" id="mobileNumber" required value={formData.mobileNumber} onChange={e => handleFormUpdate({ mobileNumber: e.target.value })} error={errors.mobileNumber} placeholder="(555) 555-5555" />
                 </div>
+                {openSections.contact && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('contact')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="contact-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
 
@@ -283,6 +296,22 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
                 <div className="space-y-6 pt-4">
                     <AddressFields address={formData.primaryAddress} onUpdate={(field, value) => handleAddressChange('primaryAddress', field, value)} onBulkUpdate={(parsed) => handleAddressBulkChange('primaryAddress', parsed)} prefix="primary" errors={errors.primaryAddress || {}} />
                 </div>
+                {openSections.primaryAddress && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('primaryAddress')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="address-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
         
@@ -320,6 +349,22 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
                         variant="underline"
                     />
                 </div>
+                {openSections.additionalDetails && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('additionalDetails')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="details-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
 
@@ -341,6 +386,22 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
                         </div>
                     )}
                 </div>
+                {openSections.mailingAddress && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('mailingAddress')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="mailing-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
 
@@ -358,19 +419,35 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
                     {errors.ackPolicies && <p className="text-red-400 text-xs">{errors.ackPolicies}</p>}
                     <div className="flex items-start">
                         <input type="checkbox" id="ackPolicies" required checked={formData.ackPolicies} onChange={e => handleFormUpdate({ ackPolicies: e.target.checked })} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
-                        <label htmlFor="ackPolicies" className="ml-3 text-sm text-white">I have read and agree to E4E Relief’s Privacy Policy and Cookie Policy. <span className="text-red-400">*</span></label>
+                        <label htmlFor="ackPolicies" className="flex items-center ml-3 text-sm text-white">I have read and agree to E4E Relief’s Privacy Policy and Cookie Policy. <RequiredIndicator required isMet={formData.ackPolicies} /></label>
                     </div>
                     {errors.commConsent && <p className="text-red-400 text-xs">{errors.commConsent}</p>}
                     <div className="flex items-start">
                         <input type="checkbox" id="commConsent" required checked={formData.commConsent} onChange={e => handleFormUpdate({ commConsent: e.target.checked })} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
-                        <label htmlFor="commConsent" className="ml-3 text-sm text-white">I consent to receive emails and text messages regarding my application. <span className="text-red-400">*</span></label>
+                        <label htmlFor="commConsent" className="flex items-center ml-3 text-sm text-white">I consent to receive emails and text messages regarding my application. <RequiredIndicator required isMet={formData.commConsent} /></label>
                     </div>
                     {errors.infoCorrect && <p className="text-red-400 text-xs">{errors.infoCorrect}</p>}
                     <div className="flex items-start">
                         <input type="checkbox" id="infoCorrect" required checked={formData.infoCorrect} onChange={e => handleFormUpdate({ infoCorrect: e.target.checked })} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
-                        <label htmlFor="infoCorrect" className="ml-3 text-sm text-white">All information I have provided is accurate. <span className="text-red-400">*</span></label>
+                        <label htmlFor="infoCorrect" className="flex items-center ml-3 text-sm text-white">All information I have provided is accurate. <RequiredIndicator required isMet={formData.infoCorrect} /></label>
                     </div>
                 </div>
+                {openSections.consent && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('consent')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="consent-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
       

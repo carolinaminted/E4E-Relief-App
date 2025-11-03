@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react';
 import type { Application, UserProfile, Address } from '../types';
 import ApplicationDetailModal from './ApplicationDetailModal';
 import CountrySelector from './CountrySelector';
-import AddressHelper from './AddressHelper';
 import SearchableSelector from './SearchableSelector';
 import { employmentTypes, languages } from '../data/appData';
 import { formatPhoneNumber } from '../utils/formatting';
+import RequiredIndicator from './RequiredIndicator';
+import { FormInput, FormRadioGroup, AddressFields } from './FormControls';
 
 interface ProfilePageProps {
   navigate: (page: 'home' | 'apply') => void;
@@ -19,49 +20,6 @@ const statusStyles: Record<Application['status'], string> = {
     Awarded: 'text-[#edda26]',
     Declined: 'text-red-400',
 };
-
-// --- Reusable Form Components ---
-const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string, required?: boolean, error?: string }> = ({ label, id, required, error, ...props }) => (
-    <div>
-        <label htmlFor={id} className="block text-sm font-medium text-white mb-1">
-            {label} {required && <span className="text-red-400">*</span>}
-        </label>
-        <input id={id} {...props} className={`w-full bg-transparent border-0 border-b p-2 text-white focus:outline-none focus:ring-0 ${error ? 'border-red-500' : 'border-[#005ca0] focus:border-[#ff8400]'} disabled:bg-transparent disabled:border-b disabled:border-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed`} />
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-    </div>
-);
-
-
-const FormRadioGroup: React.FC<{ legend: string, name: string, options: string[], value: string, onChange: (value: any) => void, required?: boolean, error?: string }> = ({ legend, name, options, value, onChange, required, error }) => (
-    <div>
-        <p className={`block text-sm font-medium text-white mb-1 ${error ? 'text-red-400' : ''}`}>
-            {legend} {required && <span className="text-red-400">*</span>}
-        </p>
-        <div className="flex gap-4 mt-2">
-            {options.map(option => (
-                <label key={option} className="flex items-center cursor-pointer">
-                    <input type="radio" name={name} value={option} checked={value === option} onChange={(e) => onChange(e.target.value)} className="form-radio h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 focus:ring-[#ff8400]" />
-                    <span className="ml-2 text-white">{option}</span>
-                </label>
-            ))}
-        </div>
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-    </div>
-);
-
-const AddressFields: React.FC<{ address: Address, onUpdate: (field: keyof Address, value: string) => void, onBulkUpdate: (parsedAddress: Partial<Address>) => void, prefix: string, errors: Record<string, string> }> = ({ address, onUpdate, onBulkUpdate, prefix, errors }) => (
-    <>
-        <AddressHelper onAddressParsed={onBulkUpdate} variant="underline" />
-        <CountrySelector id={`${prefix}Country`} required value={address.country} onUpdate={value => onUpdate('country', value)} variant="underline" error={errors.country}/>
-        <FormInput label="Street 1" id={`${prefix}Street1`} required value={address.street1} onChange={e => onUpdate('street1', e.target.value)} error={errors.street1} />
-        <FormInput label="Street 2" id={`${prefix}Street2`} value={address.street2 || ''} onChange={e => onUpdate('street2', e.target.value)} />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FormInput label="City" id={`${prefix}City`} required value={address.city} onChange={e => onUpdate('city', e.target.value)} error={errors.city} />
-            <FormInput label="State or Province" id={`${prefix}State`} required value={address.state} onChange={e => onUpdate('state', e.target.value)} error={errors.state} />
-            <FormInput label="ZIP/Postal Code" id={`${prefix}Zip`} required value={address.zip} onChange={e => onUpdate('zip', e.target.value)} error={errors.zip} />
-        </div>
-    </>
-);
 
 // --- UI Icons ---
 const ChevronIcon: React.FC<{ isOpen: boolean }> = ({ isOpen }) => (
@@ -90,6 +48,28 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
     mailingAddress: false,
     consent: false,
   });
+  
+  const { twelveMonthRemaining, lifetimeRemaining } = useMemo(() => {
+    if (applications.length === 0) {
+      return {
+        twelveMonthRemaining: 10000,
+        lifetimeRemaining: 50000,
+      };
+    }
+
+    // The most recent application is the last one in the array, which reflects the latest state.
+    const latestApplication = applications[applications.length - 1];
+    
+    return {
+      twelveMonthRemaining: latestApplication.twelveMonthGrantRemaining,
+      lifetimeRemaining: latestApplication.lifetimeGrantRemaining,
+    };
+  }, [applications]);
+
+  // Create a reversed list for display so newest applications appear first
+  const sortedApplicationsForDisplay = useMemo(() => {
+    return [...applications].reverse();
+  }, [applications]);
 
   const sectionHasErrors = useMemo(() => {
     // Contact
@@ -131,10 +111,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
     }
     setFormData(prev => ({ ...prev, [field]: finalValue }));
 
-    if (errors[field]) {
+    // FIX: Used type assertion to prevent 'symbol' cannot be used as an index type error.
+    if (errors[field as string]) {
       setErrors(prev => {
         const newErrors = { ...prev };
-        delete newErrors[field];
+        // FIX: Used type assertion for deleting property.
+        delete newErrors[field as string];
         return newErrors;
       });
     }
@@ -148,7 +130,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
             [field]: value
         }
     }));
-    const errorKey = `${addressType}.${field}`;
+    // FIX: Explicitly convert `field` to a string to avoid runtime errors with symbols.
+    const errorKey = `${addressType}.${String(field)}`;
     if (errors[errorKey]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -261,20 +244,44 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 <ChevronIcon isOpen={isApplicationsOpen} />
             </button>
             <div className={`transition-all duration-500 ease-in-out ${isApplicationsOpen ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-                <div className="space-y-4 pt-4">
+                <div className="bg-[#003a70]/50 p-4 rounded-lg mb-4 flex flex-col gap-4 sm:flex-row sm:justify-around text-center border border-[#005ca0]">
+                    <div>
+                        <p className="text-sm text-white uppercase tracking-wider">12-Month Remaining</p>
+                        <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
+                            ${twelveMonthRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-sm text-white uppercase tracking-wider">Lifetime Remaining</p>
+                        <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
+                            ${lifetimeRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                    </div>
+                </div>
+                <div className="space-y-4">
                 {applications.length > 0 ? (
-                    applications.map(app => (
-                    <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[#004b8d] p-4 rounded-md flex justify-between items-center hover:bg-[#005ca0]/50 transition-colors duration-200">
-                        <div>
-                        <p className="font-bold text-lg">{app.event}</p>
-                        <p className="text-sm text-gray-300">Submitted: {app.submittedDate}</p>
+                    <>
+                        {sortedApplicationsForDisplay.map(app => (
+                        <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[#004b8d] p-4 rounded-md flex justify-between items-center hover:bg-[#005ca0]/50 transition-colors duration-200">
+                            <div>
+                            <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">{app.event}</p>
+                            <p className="text-sm text-gray-300">Submitted: {app.submittedDate}</p>
+                            </div>
+                            <div className="text-right">
+                            <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${app.requestedAmount.toFixed(2)}</p>
+                            <p className="text-sm text-gray-300">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
+                            </div>
+                        </button>
+                        ))}
+                        <div className="flex justify-center pt-4">
+                            <button 
+                                onClick={() => navigate('apply')} 
+                                className="bg-[#ff8400] hover:bg-[#e67700] text-white font-bold py-2 px-6 rounded-md transition-colors duration-200"
+                            >
+                                Apply Now
+                            </button>
                         </div>
-                        <div className="text-right">
-                        <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">${app.requestedAmount.toFixed(2)}</p>
-                        <p className="text-sm text-gray-300">Status: <span className={`font-medium ${statusStyles[app.status]}`}>{app.status}</span></p>
-                        </div>
-                    </button>
-                    ))
+                    </>
                 ) : (
                     <div className="text-center py-8 bg-[#003a70]/50 rounded-lg">
                         <p className="text-gray-300">You have not submitted any applications yet.</p>
@@ -307,6 +314,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                     <FormInput label="Email" id="email" required value={formData.email} disabled />
                     <FormInput label="Mobile Number" id="mobileNumber" required value={formData.mobileNumber} onChange={e => handleFormChange('mobileNumber', e.target.value)} error={errors.mobileNumber} placeholder="(555) 555-5555" />
                 </div>
+                {openSections.contact && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('contact')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="contact-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
 
@@ -323,6 +346,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 <div className="space-y-6 pt-4">
                     <AddressFields address={formData.primaryAddress} onUpdate={(field, value) => handleAddressChange('primaryAddress', field, value)} onBulkUpdate={(parsed) => handleAddressBulkChange('primaryAddress', parsed)} prefix="primary" errors={errors.primaryAddress || {}} />
                 </div>
+                {openSections.primaryAddress && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('primaryAddress')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="address-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
         
@@ -360,6 +399,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                         variant="underline"
                     />
                 </div>
+                {openSections.additionalDetails && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('additionalDetails')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="details-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
 
@@ -381,6 +436,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                         </div>
                     )}
                 </div>
+                {openSections.mailingAddress && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('mailingAddress')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="mailing-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
 
@@ -398,19 +469,35 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                      {errors.ackPolicies && <p className="text-red-400 text-xs">{errors.ackPolicies}</p>}
                     <div className="flex items-start">
                         <input type="checkbox" id="ackPolicies" required checked={formData.ackPolicies} onChange={e => handleFormChange('ackPolicies', e.target.checked)} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
-                        <label htmlFor="ackPolicies" className="ml-3 text-sm text-white">I have read and agree to E4E Relief’s Privacy Policy and Cookie Policy. <span className="text-red-400">*</span></label>
+                        <label htmlFor="ackPolicies" className="flex items-center ml-3 text-sm text-white">I have read and agree to E4E Relief’s Privacy Policy and Cookie Policy. <RequiredIndicator required isMet={formData.ackPolicies} /></label>
                     </div>
                      {errors.commConsent && <p className="text-red-400 text-xs">{errors.commConsent}</p>}
                     <div className="flex items-start">
                         <input type="checkbox" id="commConsent" required checked={formData.commConsent} onChange={e => handleFormChange('commConsent', e.target.checked)} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
-                        <label htmlFor="commConsent" className="ml-3 text-sm text-white">I consent to receive emails and text messages regarding my application. <span className="text-red-400">*</span></label>
+                        <label htmlFor="commConsent" className="flex items-center ml-3 text-sm text-white">I consent to receive emails and text messages regarding my application. <RequiredIndicator required isMet={formData.commConsent} /></label>
                     </div>
                      {errors.infoCorrect && <p className="text-red-400 text-xs">{errors.infoCorrect}</p>}
                     <div className="flex items-start">
                         <input type="checkbox" id="infoCorrect" required checked={formData.infoCorrect} onChange={e => handleFormChange('infoCorrect', e.target.checked)} className="h-4 w-4 text-[#ff8400] bg-gray-700 border-gray-600 rounded focus:ring-[#ff8400] mt-1" />
-                        <label htmlFor="infoCorrect" className="ml-3 text-sm text-white">All information I have provided is accurate. <span className="text-red-400">*</span></label>
+                        <label htmlFor="infoCorrect" className="flex items-center ml-3 text-sm text-white">All information I have provided is accurate. <RequiredIndicator required isMet={formData.infoCorrect} /></label>
                     </div>
                 </div>
+                {openSections.consent && (
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="button"
+                            onClick={() => toggleSection('consent')}
+                            className="flex items-center text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 transition-opacity"
+                            aria-controls="consent-section"
+                            aria-expanded="true"
+                        >
+                            Collapse
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-[#ff8400]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </fieldset>
 
