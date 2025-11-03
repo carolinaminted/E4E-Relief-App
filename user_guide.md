@@ -46,7 +46,26 @@ The application is a guided, step‑by‑step form. Your progress is saved in th
 Apply for Relief Page:
 
 <img width="340" height="610" alt="image" src="https://github.com/user-attachments/assets/f42bec46-6b37-4197-9758-6d21eedf51c2" />
+<img width="325" height="617" alt="image" src="https://github.com/user-attachments/assets/8fff68c5-edc3-4858-989d-dac899423d43" />
+<img width="321" height="621" alt="image" src="https://github.com/user-attachments/assets/0fc04d3d-f463-4cf7-80b2-15e2b4f4634d" />
+<img width="326" height="619" alt="image" src="https://github.com/user-attachments/assets/7c0bb3f8-b964-434c-be08-bb99c7481c06" />
+<img width="316" height="615" alt="image" src="https://github.com/user-attachments/assets/766a3be0-bba5-49e8-a709-c0edf5fc3de4" />
+<img width="330" height="612" alt="image" src="https://github.com/user-attachments/assets/adb16fc7-3250-43b8-b3ae-9f432e4bdf52" />
+<img width="331" height="614" alt="image" src="https://github.com/user-attachments/assets/98651770-a6b3-4ce3-adbc-f9173ed91589" />
+<img width="316" height="601" alt="image" src="https://github.com/user-attachments/assets/937d8fb4-412d-4301-a74d-48f8deda9e34" />
+<img width="335" height="614" alt="image" src="https://github.com/user-attachments/assets/d5400bf7-8893-476b-a9c6-a0cd54c4872d" />
+<img width="328" height="609" alt="image" src="https://github.com/user-attachments/assets/3c196b2b-0a80-4d2a-bc97-ee593af263ad" />
+<img width="320" height="606" alt="image" src="https://github.com/user-attachments/assets/1d8c2d23-c35c-4ec4-b31a-1863f73c3ca0" />
+<img width="336" height="606" alt="image" src="https://github.com/user-attachments/assets/e4f3dc91-24a2-49a3-9948-0d1f0afd1161" />
 
+
+## My Applications Page
+- View a list of all your submissions with status (Submitted, Awarded, Declined).
+- Select an entry to open a **detail view** showing what you submitted.
+- Use this area to confirm what the organization received.
+
+<img width="324" height="600" alt="image" src="https://github.com/user-attachments/assets/95ebd3b3-9132-4826-9fa6-37461bc6cfc9" />
+<img width="332" height="622" alt="image" src="https://github.com/user-attachments/assets/16133a5c-a0a4-4985-9122-f4377e7a2d3f" />
 
 ## Profile Page
 - View a list of all your submissions with their status (Submitted, Awarded, Declined).
@@ -54,12 +73,13 @@ Apply for Relief Page:
 - Update your name, preferred language, and other contact details.
 - Edit your addresses.
 
-<img width="324" height="615" alt="image" src="https://github.com/user-attachments/assets/a19f966e-301d-4dcb-9e51-32f5097a6228" />
+<img width="330" height="612" alt="image" src="https://github.com/user-attachments/assets/a9d7a406-90ef-416b-ada7-c33b28e35046" />
+<img width="327" height="615" alt="image" src="https://github.com/user-attachments/assets/5b9c4cf4-a5b5-43c3-96c9-56d3e5db9524" />
 
 
 ## Support Page
-- Find contact information for program support.
-- This page can be replaced with your organization’s content and links.
+- Read guidance on eligibility, timelines, and contact options.
+- This page is a placeholder and can be replaced with your organization’s content and links.
 
 <img width="342" height="617" alt="image" src="https://github.com/user-attachments/assets/450f1dd3-a0be-476c-b892-8c7346f8381b" />
 
@@ -70,7 +90,7 @@ Apply for Relief Page:
 - Provide information like "I was affected by the flood and need $1500" to have the AI pre-fill your application draft.
 - Ask about past applications, including why one might have been declined.
 
-<img width="335" height="609" alt="image" src="https://github.com/user-attachments/assets/a8f64df1-c745-4cc7-8ef9-8a19945415c7" />
+<img width="339" height="605" alt="image" src="https://github.com/user-attachments/assets/257a27df-1cb7-41d3-937a-7756a3eb8616" />
 
 
 ## Instant, Rules-Based Decisioning
