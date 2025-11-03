@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { UserProfile, TokenUsageTableRow, TopSessionData, DailyUsageData, TokenUsageFilters } from '../types';
-import { getTokenUsageTableData, getTopSessionData, getAIAssistantUsageData, getFilterOptions } from '../data/tokenData';
+import { getTokenUsageTableData, getTopSessionData, getAIAssistantUsageData, getFilterOptions } from '../services/tokenTracker';
 
 // FIX: Renamed component import to avoid naming collision with the 'TokenUsageFilters' type.
 import TokenUsageFiltersComponent from './TokenUsageFilters';
@@ -14,45 +14,43 @@ interface TokenUsagePageProps {
 }
 
 const TokenUsagePage: React.FC<TokenUsagePageProps> = ({ navigate, currentUser }) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [tableData, setTableData] = useState<TokenUsageTableRow[]>([]);
   const [topSessionData, setTopSessionData] = useState<TopSessionData | null>(null);
   const [aiAssistantData, setAiAssistantData] = useState<DailyUsageData[]>([]);
   
-  const today = new Date().toISOString().split('T')[0];
-  const thirtyDaysAgo = new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0];
-  const filterOptions = getFilterOptions(currentUser.email);
+  const [filterOptions, setFilterOptions] = useState(getFilterOptions());
 
   const [filters, setFilters] = useState<TokenUsageFilters>({
-    account: filterOptions.accounts[0] || 'all',
-    dateRange: { start: thirtyDaysAgo, end: today },
+    account: 'all',
+    dateRange: { start: '', end: '' }, // Currently unused but kept for UI consistency
     feature: 'all',
-    user: currentUser.email,
+    user: 'all',
     model: 'all',
     environment: 'all',
   });
   
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-        const [table, topSession, assistantUsage] = await Promise.all([
-            getTokenUsageTableData(filters, currentUser.email),
-            getTopSessionData(filters, currentUser.email),
-            getAIAssistantUsageData(filters, currentUser.email)
-        ]);
-        setTableData(table);
-        setTopSessionData(topSession);
-        setAiAssistantData(assistantUsage);
-    } catch (error) {
-        console.error("Failed to fetch token usage data:", error);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [filters, currentUser.email]);
+  const fetchData = useCallback(() => {
+    // Data is now synchronous and pulled from the local tracker service
+    setTableData(getTokenUsageTableData(filters));
+    setTopSessionData(getTopSessionData(filters));
+    setAiAssistantData(getAIAssistantUsageData(filters));
+    setFilterOptions(getFilterOptions());
+  }, [filters]);
 
   useEffect(() => {
+    // Fetch data whenever the component mounts or filters change
     fetchData();
   }, [fetchData]);
+
+  // Set up an interval to refresh the data every 2 seconds to catch new events
+  useEffect(() => {
+    const interval = setInterval(() => {
+        fetchData();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full relative min-h-[calc(100vh-100px)]">

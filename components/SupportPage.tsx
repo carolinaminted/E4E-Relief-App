@@ -7,14 +7,15 @@ interface SupportPageProps {
 }
 
 const SupportPage: React.FC<SupportPageProps> = ({ navigate }) => {
-  const ActionCard: React.FC<{ title: string; description: string; onClick: () => void; children?: React.ReactNode }> = ({ title, description, onClick, children }) => (
+  
+  // A smaller, simpler card for secondary actions
+  const SubActionCard: React.FC<{ title: string; description: string; onClick: () => void; }> = ({ title, description, onClick }) => (
     <div 
-      className="bg-[#004b8d] p-6 rounded-lg shadow-lg hover:bg-[#005ca0]/50 transition-all duration-300 cursor-pointer flex flex-col"
+      className="bg-[#004b8d] p-6 rounded-lg shadow-lg hover:bg-[#005ca0]/50 transition-all duration-300 cursor-pointer flex flex-col items-center text-center"
       onClick={onClick}
     >
-      <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-2">{title}</h2>
-      <p className="text-white mb-4 flex-grow">{description}</p>
-      {children}
+      <h2 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-2">{title}</h2>
+      <p className="text-white text-sm">{description}</p>
     </div>
   );
 
@@ -25,40 +26,43 @@ const SupportPage: React.FC<SupportPageProps> = ({ navigate }) => {
         <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-12 text-center">
           Support Center
         </h1>
-        <div className="grid md:grid-cols-2 gap-8 w-full">
-          <ActionCard 
-            title="Contact Support" 
-            description="Get in touch with our support team for assistance."
-            onClick={() => {}}
-          >
-            <div className="bg-[#003a70]/50 p-4 rounded-lg space-y-4 text-center cursor-default" onClick={(e) => e.stopPropagation()}>
+        
+        {/* Main Contact Card */}
+        <div className="bg-[#004b8d] p-8 rounded-lg shadow-2xl max-w-2xl mx-auto border border-[#005ca0]/50">
+           <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-2 text-center">Contact Support</h2>
+           <p className="text-white mb-6 text-center">Try asking the AI Relief Assistant for any questions you may have now. Select the chat bubble in the bottom left to get started.</p>
+           <div className="bg-[#003a70]/50 p-6 rounded-lg space-y-6 text-center">
                <div>
                   <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-1">Support Email</h3>
-                  <a href="mailto:support@e4erelief.example" className="font-semibold text-white hover:underline">support@e4erelief.example</a>
+                  <a href="mailto:support@e4erelief.example" className="font-semibold text-white hover:underline text-lg">support@e4erelief.example</a>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-1">Support Phone</h3>
-                  <a href="tel:800-555-0199" className="font-semibold text-white hover:underline">(800) 555-0199</a>
+                  <a href="tel:800-555-0199" className="font-semibold text-white hover:underline text-lg">(800) 555-0199</a>
                 </div>
             </div>
-          </ActionCard>
-          <ActionCard 
-            title="FAQs" 
-            description="Find answers to common questions about our relief programs and application process." 
-            onClick={() => {}} 
-          />
-          <ActionCard 
-            title="View Token Usage" 
-            description="Review AI model token consumption for your account." 
-            onClick={() => navigate('tokenUsage')} 
-          />
-          <ActionCard 
-            title="Payment Options" 
-            description="Learn more about how grants are disbursed and the payment methods available." 
-            onClick={() => {}} 
-          />
         </div>
-        <p className="text-white pt-12 italic text-center">
+
+        {/* Secondary Tiles */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-12">
+            <SubActionCard 
+                title="FAQs" 
+                description="Find answers to common questions." 
+                onClick={() => {}} 
+            />
+            <SubActionCard 
+                title="View Token Usage" 
+                description="Review AI model token consumption." 
+                onClick={() => navigate('tokenUsage')} 
+            />
+            <SubActionCard 
+                title="Payment Options" 
+                description="Learn how grants are disbursed." 
+                onClick={() => {}} 
+            />
+        </div>
+        
+        <p className="text-white pt-12 italic text-center text-sm">
             You can also chat with the in-app AI assistant for quick answers to common questions.
         </p>
       </div>

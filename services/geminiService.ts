@@ -1,5 +1,6 @@
 import { GoogleGenAI, Chat, FunctionDeclaration, Type } from "@google/genai";
 import type { Application, Address, UserProfile, ApplicationFormData, EventData, EligibilityDecision } from '../types';
+import { logEvent as logTokenEvent, estimateTokens } from './tokenTracker';
 
 const API_KEY = process.env.API_KEY;
 
@@ -310,16 +311,21 @@ export async function getAIAssistedDecision(
         ${JSON.stringify(preliminaryDecision, null, 2)}
         ---
     `;
+    const model = 'gemini-2.5-flash';
+    const inputTokens = estimateTokens(prompt);
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: model,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: finalDecisionSchema,
             },
         });
+        
+        const outputTokens = estimateTokens(response.text);
+        logTokenEvent({ feature: 'Final Decision', model, inputTokens, outputTokens });
 
         const jsonString = response.text.trim();
         const aiResponse = JSON.parse(jsonString) as { finalDecision: 'Approved' | 'Denied', finalReason: string, finalAward: number };
@@ -380,16 +386,21 @@ export async function parseAddressWithGemini(addressString: string): Promise<Par
     
     Address to parse: "${addressString}"
   `;
+  const model = 'gemini-2.5-flash';
+  const inputTokens = estimateTokens(prompt);
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: model,
       contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: addressJsonSchema,
       },
     });
+
+    const outputTokens = estimateTokens(response.text);
+    logTokenEvent({ feature: 'Address Parsing', model, inputTokens, outputTokens });
 
     const jsonString = response.text.trim();
     if (jsonString) {
@@ -467,16 +478,21 @@ export async function parseApplicationDetailsWithGemini(
 
     User's description: "${description}"
   `;
+  const model = 'gemini-2.5-flash';
+  const inputTokens = estimateTokens(prompt);
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: model,
       contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: applicationDetailsJsonSchema,
       },
     });
+
+    const outputTokens = estimateTokens(response.text);
+    logTokenEvent({ feature: 'Application Parsing', model, inputTokens, outputTokens });
 
     const jsonString = response.text.trim();
     if (jsonString) {

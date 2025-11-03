@@ -4,6 +4,7 @@ import { ChatMessage, MessageRole, Application } from '../types';
 import { createChatSession } from '../services/geminiService';
 import ChatWindow from './ChatWindow';
 import ChatInput from './ChatInput';
+import { logEvent as logTokenEvent, estimateTokens } from '../services/tokenTracker';
 
 interface ChatbotWidgetProps {
   applications: Application[];
@@ -30,6 +31,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications, onChatbotAc
     setIsLoading(true);
     const userMessage: ChatMessage = { role: MessageRole.USER, content: userInput };
     setMessages(prev => [...prev, userMessage]);
+    const inputTokens = estimateTokens(userInput);
 
     if (!chatSessionRef.current) {
         chatSessionRef.current = createChatSession(applications);
@@ -93,6 +95,14 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications, onChatbotAc
             }
         }
       }
+      
+      const outputTokens = estimateTokens(modelResponseText);
+      logTokenEvent({
+          feature: 'AI Assistant',
+          model: 'gemini-2.5-flash',
+          inputTokens,
+          outputTokens,
+      });
 
     } catch (error) {
       console.error(error);

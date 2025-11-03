@@ -3,6 +3,7 @@ import type { UserProfile, Application, EventData, EligibilityDecision } from '.
 import { evaluateApplicationEligibility, getAIAssistedDecision } from './services/geminiService';
 // FIX: Corrected the import path for ApplicationFormData. It should be imported from './types' instead of a component file.
 import type { ApplicationFormData } from './types';
+import { init as initTokenTracker, reset as resetTokenTracker } from './services/tokenTracker';
 
 // Page Components
 import LoginPage from './components/LoginPage';
@@ -117,6 +118,7 @@ function App() {
     if (user && user.passwordHash === password) {
       const { passwordHash, ...profile } = user;
       setCurrentUser(profile);
+      initTokenTracker(profile);
       setPage('home');
       return true;
     }
@@ -135,12 +137,14 @@ function App() {
     setUsers(prev => ({ ...prev, [email]: newUser }));
     setApplications(prev => ({ ...prev, [email]: [] }));
     setCurrentUser(newUserProfile);
+    initTokenTracker(newUserProfile);
     setPage('home');
     return true;
   }, [users]);
 
   const handleLogout = () => {
     setCurrentUser(null);
+    resetTokenTracker();
     setPage('login');
   };
   
