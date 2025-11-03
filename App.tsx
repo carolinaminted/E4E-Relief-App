@@ -1,6 +1,7 @@
 
+
 import React, { useState, useCallback, useMemo } from 'react';
-import type { UserProfile, Application, EventData } from './types';
+import type { UserProfile, Application, EventData, EligibilityDecision } from './types';
 import { evaluateApplicationEligibility } from './services/geminiService';
 // FIX: Corrected the import path for ApplicationFormData. It should be imported from './types' instead of a component file.
 import type { ApplicationFormData } from './types';
@@ -61,6 +62,7 @@ const initialApplications: Record<string, Application[]> = {
       requestedAmount: 2500,
       submittedDate: '2023-08-12',
       status: 'Awarded',
+      reasons: ["Application meets all automatic approval criteria."],
       decisionedDate: '2023-08-12',
       twelveMonthGrantRemaining: 7500,
       lifetimeGrantRemaining: 47500,
@@ -181,14 +183,23 @@ function App() {
     const currentTwelveMonthRemaining = lastApplication ? lastApplication.twelveMonthGrantRemaining : initialTwelveMonthMax;
     const currentLifetimeRemaining = lastApplication ? lastApplication.lifetimeGrantRemaining : initialLifetimeMax;
 
-    // Call the AI service to get the status, decision date, and new grant remaining amounts
-    const { decision, decisionedDate, newTwelveMonthRemaining, newLifetimeRemaining } = await evaluateApplicationEligibility({
+    // Call the rules engine to get the decision
+    const eligibilityResult = await evaluateApplicationEligibility({
         id: tempId,
         employmentStartDate: appFormData.profileData.employmentStartDate,
         eventData: appFormData.eventData,
         currentTwelveMonthRemaining: currentTwelveMonthRemaining,
         currentLifetimeRemaining: currentLifetimeRemaining,
     });
+    
+    console.log("Eligibility Decision:", eligibilityResult);
+
+    const getStatusFromDecision = (decision: EligibilityDecision['decision']): Application['status'] => {
+        if (decision === 'Approved') return 'Awarded';
+        if (decision === 'Denied') return 'Declined';
+        return 'Submitted'; // for 'Review'
+    };
+
 
     // FIX: Coerce empty string values from form data to undefined to match the Application type, which uses undefined for optional fields instead of empty strings.
     const newApplication: Application = {
@@ -202,10 +213,11 @@ function App() {
       evacuationNights: appFormData.eventData.evacuationNights || undefined,
       powerLossDays: appFormData.eventData.powerLossDays || undefined,
       submittedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
-      status: decision,
-      decisionedDate: decisionedDate,
-      twelveMonthGrantRemaining: newTwelveMonthRemaining,
-      lifetimeGrantRemaining: newLifetimeRemaining,
+      status: getStatusFromDecision(eligibilityResult.decision),
+      reasons: eligibilityResult.reasons,
+      decisionedDate: eligibilityResult.decisionedDate,
+      twelveMonthGrantRemaining: eligibilityResult.remaining_12mo,
+      lifetimeGrantRemaining: eligibilityResult.remaining_lifetime,
       shareStory: appFormData.agreementData.shareStory ?? false,
       receiveAdditionalInfo: appFormData.agreementData.receiveAdditionalInfo ?? false,
     };

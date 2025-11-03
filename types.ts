@@ -98,6 +98,7 @@ export interface Application {
   // --- Metadata
   submittedDate: string;
   status: 'Submitted' | 'Awarded' | 'Declined';
+  reasons?: string[]; // Reasons for the decision (e.g., for Decline or Review)
   decisionedDate: string;
   twelveMonthGrantRemaining: number;
   lifetimeGrantRemaining: number;
@@ -113,4 +114,20 @@ export interface ApplicationFormData {
     shareStory: boolean | null;
     receiveAdditionalInfo: boolean | null;
   };
+}
+
+export interface EligibilityDecision {
+  decision: 'Approved' | 'Denied' | 'Review';
+  reasons: string[];
+  policy_hits: { rule_id: string; passed: boolean; detail: string }[];
+  recommended_award: number;
+  remaining_12mo: number;
+  remaining_lifetime: number;
+  normalized: {
+    event: string;
+    eventDate: string;
+    evacuated: 'Yes' | 'No' | '';
+    powerLossDays: number;
+  };
+  decisionedDate: string;
 }

@@ -1,6 +1,7 @@
 
+
 import { GoogleGenAI, Chat, FunctionDeclaration, Type } from "@google/genai";
-import type { Application, Address, UserProfile, ApplicationFormData, EventData } from '../types';
+import type { Application, Address, UserProfile, ApplicationFormData, EventData, EligibilityDecision } from '../types';
 
 const API_KEY = process.env.API_KEY;
 
@@ -100,13 +101,18 @@ export function createChatSession(applications?: Application[]): Chat {
   let dynamicContext = applicationContext;
 
   if (applications && applications.length > 0) {
-    const applicationList = applications.map(app => 
-      `Application ID: ${app.id}\nEvent: ${app.event}\nAmount: $${app.requestedAmount}\nSubmitted: ${app.submittedDate}\nStatus: ${app.status}`
-    ).join('\n---\n');
+    const applicationList = applications.map(app => {
+      let appDetails = `Application ID: ${app.id}\nEvent: ${app.event}\nAmount: $${app.requestedAmount}\nSubmitted: ${app.submittedDate}\nStatus: ${app.status}`;
+      if (app.reasons && (app.status === 'Declined' || app.status === 'Submitted')) {
+        appDetails += `\nDecision Reasons: ${app.reasons.join(' ')}`;
+      }
+      return appDetails;
+    }).join('\n---\n');
 
     dynamicContext += `
 **User's Application History**:
-You have access to the user's submitted applications. If they ask about them, use this data.
+You have access to the user's submitted applications. If they ask about one, use this data. 
+If an application status is 'Declined' or 'Submitted' (which means 'Under Review'), you MUST use the 'Decision Reasons' provided to explain why. Be direct and clear.
 ${applicationList}
 `;
   } else {
@@ -124,94 +130,152 @@ ${applicationList}
 }
 
 export async function evaluateApplicationEligibility(
-  appData: { 
-    id: string; 
-    employmentStartDate: string; 
+  appData: {
+    id: string;
+    employmentStartDate: string;
     eventData: EventData;
     currentTwelveMonthRemaining: number;
     currentLifetimeRemaining: number;
   }
-): Promise<{ 
-    decision: 'Awarded' | 'Declined'; 
-    decisionedDate: string;
-    newTwelveMonthRemaining: number;
-    newLifetimeRemaining: number;
-}> {
+): Promise<EligibilityDecision> {
+  const { eventData, currentTwelveMonthRemaining, currentLifetimeRemaining, employmentStartDate } = appData;
   const today = new Date();
+  // Set time to 0 to compare dates only
+  today.setHours(0, 0, 0, 0);
+
   const ninetyDaysAgo = new Date(today);
   ninetyDaysAgo.setDate(today.getDate() - 90);
-  const todayStr = today.toISOString().split('T')[0];
-  const ninetyDaysAgoStr = ninetyDaysAgo.toISOString().split('T')[0];
 
-  const eligibilityDecisionSchema = {
-    type: Type.OBJECT,
-    properties: {
-        decision: { type: Type.STRING, enum: ['Awarded', 'Declined'] },
-        newTwelveMonthRemaining: { type: Type.NUMBER, description: "The updated 12-month grant amount remaining." },
-        newLifetimeRemaining: { type: Type.NUMBER, description: "The updated lifetime grant amount remaining." }
-    },
-    required: ["decision", "newTwelveMonthRemaining", "newLifetimeRemaining"]
-  };
+  const policy_hits: EligibilityDecision['policy_hits'] = [];
+  const reasons: string[] = [];
+  let decision: EligibilityDecision['decision'] = 'Approved';
 
-  const prompt = `
-    Analyze the following application details based on the strict eligibility rules and return a JSON object with the decision and updated remaining grant amounts.
-
-    **Eligibility Rules (must pass ALL):**
-    1.  **Event Type**: The event must NOT be "My disaster is not listed". If it is, the application is automatically Declined.
-    2.  **Event Date**: The event date must be on or after ${ninetyDaysAgoStr} (within the last 90 days).
-    3.  **Employment Start Date**: Must be a date on or before the event date (${appData.eventData.eventDate}).
-    4.  **Requested Amount vs. Grant Limits**: The requested amount must be less than or equal to the current 12-Month Remaining Grant amount (${appData.currentTwelveMonthRemaining}).
-    5.  **Maximum Request Amount**: The requested amount must be less than or equal to 10000.
-
-    **Remaining Grant Amount Update Rules:**
-    - If the decision is "Awarded", calculate the new remaining amounts by subtracting the 'Requested Amount' from the current remaining amounts.
-    - If the decision is "Declined", the new remaining amounts should be the same as the current remaining amounts.
-
-    **Applicant Details:**
-    - Application ID: ${appData.id}
-    - Employment Start Date: ${appData.employmentStartDate}
-    - Current 12 Month Remaining: ${appData.currentTwelveMonthRemaining}
-    - Current Lifetime Remaining: ${appData.currentLifetimeRemaining}
-    
-    **Event Details:**
-    - Event: "${appData.eventData.event}"
-    - Other Event (if specified): "${appData.eventData.otherEvent || 'N/A'}"
-    - Event Date: ${appData.eventData.eventDate}
-    - Requested Amount: ${appData.eventData.requestedAmount}
-    - Evacuated: ${appData.eventData.evacuated || 'N/A'}
-    - Power Loss: ${appData.eventData.powerLoss || 'N/A'}
-    - Days without Power: ${appData.eventData.powerLossDays || 'N/A'}
-  `;
-
-  try {
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: eligibilityDecisionSchema,
-        },
-    });
-    
-    const result = JSON.parse(response.text.trim());
-
-    return { 
-        decision: result.decision, 
-        decisionedDate: todayStr,
-        newTwelveMonthRemaining: result.newTwelveMonthRemaining,
-        newLifetimeRemaining: result.newLifetimeRemaining
-    };
-
-  } catch (error) {
-    console.error("AI eligibility check failed:", error);
-    // Default to a safe status in case of API error
-    return { 
-        decision: 'Declined', 
-        decisionedDate: todayStr,
-        newTwelveMonthRemaining: appData.currentTwelveMonthRemaining,
-        newLifetimeRemaining: appData.currentLifetimeRemaining
-    };
+  // --- Normalization & Validation ---
+  const eventDateStr = eventData.eventDate || '';
+  const eventDate = eventDateStr ? new Date(eventDateStr) : null;
+  if (eventDate) {
+    // Also set time to 0 for correct date comparisons
+    eventDate.setHours(0,0,0,0);
   }
+
+  const requestedAmount = Number(eventData.requestedAmount) || 0;
+  const normalizedEvent = eventData.event === 'My disaster is not listed' ? (eventData.otherEvent || '').trim() : (eventData.event || '').trim();
+  
+  // --- Rule Evaluation (Denial rules first) ---
+  
+  // R1: Event specified
+  if (!normalizedEvent) {
+    decision = 'Denied';
+    reasons.push("An event type must be selected. If 'My disaster is not listed' is chosen, the specific event must be provided.");
+    policy_hits.push({ rule_id: 'R1', passed: false, detail: 'Event field (201/202) is empty.' });
+  } else {
+    policy_hits.push({ rule_id: 'R1', passed: true, detail: 'Event specified.' });
+  }
+
+  // R2: Event date recency
+  if (!eventDate || isNaN(eventDate.getTime()) || eventDate < ninetyDaysAgo || eventDate > today) {
+    decision = 'Denied';
+    reasons.push(`Event date is older than 90 days or invalid. Event must be between ${ninetyDaysAgo.toISOString().split('T')[0]} and today.`);
+    policy_hits.push({ rule_id: 'R2', passed: false, detail: `Event date ${eventDateStr} is not within the last 90 days.` });
+  } else {
+    policy_hits.push({ rule_id: 'R2', passed: true, detail: 'Event date is recent.' });
+  }
+
+  // R3: Employment timeline
+  const empStartDate = employmentStartDate ? new Date(employmentStartDate) : null;
+  if (empStartDate) empStartDate.setHours(0,0,0,0);
+  if (!empStartDate || isNaN(empStartDate.getTime()) || (eventDate && empStartDate > eventDate)) {
+    decision = 'Denied';
+    reasons.push("Employment start date is invalid or after the event date.");
+    policy_hits.push({ rule_id: 'R3', passed: false, detail: 'Employment start date is invalid or after event date.' });
+  } else {
+    policy_hits.push({ rule_id: 'R3', passed: true, detail: 'Employment start date is valid.' });
+  }
+
+  // R4 & R5: Requested Amount
+  if (requestedAmount <= 0) {
+     decision = 'Denied';
+     reasons.push(`Requested amount must be greater than zero.`);
+     policy_hits.push({ rule_id: 'R4/R5', passed: false, detail: 'Requested amount is not greater than zero.' });
+  } else if (requestedAmount > 10000) {
+    decision = 'Denied';
+    reasons.push(`Requested amount of $${requestedAmount.toFixed(2)} exceeds the maximum of $10,000.`);
+    policy_hits.push({ rule_id: 'R5', passed: false, detail: 'Requested amount exceeds absolute cap of $10,000.' });
+  } else if (requestedAmount > currentTwelveMonthRemaining) {
+    decision = 'Denied';
+    reasons.push(`Requested amount of $${requestedAmount.toFixed(2)} exceeds the remaining 12-month limit of $${currentTwelveMonthRemaining.toFixed(2)}.`);
+    policy_hits.push({ rule_id: 'R4', passed: false, detail: 'Requested amount exceeds 12-month limit.' });
+  } else if (requestedAmount > currentLifetimeRemaining) {
+    decision = 'Denied';
+    reasons.push(`Requested amount of $${requestedAmount.toFixed(2)} exceeds the remaining lifetime limit of $${currentLifetimeRemaining.toFixed(2)}.`);
+    policy_hits.push({ rule_id: 'R4', passed: false, detail: 'Requested amount exceeds lifetime limit.' });
+  } else {
+    policy_hits.push({ rule_id: 'R4', passed: true, detail: 'Requested amount is within all limits.' });
+    policy_hits.push({ rule_id: 'R5', passed: true, detail: 'Requested amount is within absolute cap.' });
+  }
+
+  // --- Rule Evaluation (Review rules, only if not already Denied) ---
+  if (decision !== 'Denied') {
+    // R6: Visibility-consistency
+    if (eventData.evacuated === 'Yes') {
+      const missingEvacFields = !eventData.evacuatingFromPrimary || !eventData.stayedWithFamilyOrFriend || !eventData.evacuationStartDate || !eventData.evacuationNights || eventData.evacuationNights <= 0;
+      if (missingEvacFields) {
+        decision = 'Review';
+        reasons.push("Evacuation was indicated, but required details (e.g., evacuation start date, number of nights) are missing or invalid.");
+        policy_hits.push({ rule_id: 'R6', passed: false, detail: 'Missing conditionally-required evacuation fields (205, 207, 208, 209).' });
+      } else {
+        policy_hits.push({ rule_id: 'R6', passed: true, detail: 'Evacuation fields are complete.' });
+      }
+    }
+
+    if (eventData.powerLoss === 'Yes') {
+      if (!eventData.powerLossDays || eventData.powerLossDays <= 0) {
+        decision = 'Review';
+        reasons.push("Power loss was indicated, but the number of days is missing or invalid.");
+        policy_hits.push({ rule_id: 'R6', passed: false, detail: 'Missing or invalid power loss days (211).' });
+      } else {
+        policy_hits.push({ rule_id: 'R6', passed: true, detail: 'Power loss fields are complete.' });
+      }
+    }
+  }
+
+  // R7: Sanity
+  let normalizedPowerLossDays = Number(eventData.powerLossDays) || 0;
+  if (eventData.powerLoss === 'No' && normalizedPowerLossDays > 0) {
+    normalizedPowerLossDays = 0;
+    policy_hits.push({ rule_id: 'R7', passed: true, detail: 'Coerced powerLossDays to 0 because powerLoss was No.' });
+  }
+
+  if (reasons.length === 0 && decision === 'Approved') {
+    reasons.push("Application meets all automatic approval criteria.");
+  }
+  
+  // --- Award & Remaining Grant Updates ---
+  let recommended_award = 0;
+  let remaining_12mo = currentTwelveMonthRemaining;
+  let remaining_lifetime = currentLifetimeRemaining;
+
+  if (decision === 'Approved') {
+    recommended_award = Math.min(requestedAmount, currentTwelveMonthRemaining, currentLifetimeRemaining);
+    remaining_12mo -= recommended_award;
+    remaining_lifetime -= recommended_award;
+  }
+  
+  return {
+    decision,
+    reasons,
+    policy_hits,
+    recommended_award,
+    remaining_12mo,
+    remaining_lifetime,
+    normalized: {
+      event: normalizedEvent,
+      eventDate: eventDate?.toISOString().split('T')[0] || eventDateStr,
+      evacuated: eventData.evacuated || '',
+      powerLossDays: normalizedPowerLossDays
+    },
+    decisionedDate: today.toISOString().split('T')[0]
+  };
 }
 
 const addressJsonSchema = {
