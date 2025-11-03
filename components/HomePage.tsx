@@ -22,7 +22,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
       <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-12">
         Welcome to E4E Relief
       </h1>
-      <div className="grid md:grid-cols-3 gap-8 w-full max-w-5xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
         <ActionCard title="Apply for Relief" description="Submit a new application for financial assistance." onClick={() => navigate('apply')} />
         <ActionCard title="My Profile" description="View your application history and manage your contact information." onClick={() => navigate('profile')} />
         <ActionCard title="Get Support" description="Find contact information and answers to frequently asked questions." onClick={() => navigate('support')} />

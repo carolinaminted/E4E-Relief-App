@@ -131,3 +131,58 @@ export interface EligibilityDecision {
   };
   decisionedDate: string;
 }
+
+// --- Token Usage Analytics Types ---
+
+export interface TokenEvent {
+  id: string;
+  sessionId: string;
+  userId: string; // Corresponds to UserProfile.email
+  timestamp: string; // ISO 8601
+  feature: 'AI Assistant' | 'Address Parsing' | 'Application Parsing' | 'Final Decision';
+  model: 'gemini-2.5-flash' | 'gemini-2.5-pro';
+  inputTokens: number;
+  cachedInputTokens: number;
+  outputTokens: number;
+  environment: 'Production' | 'Development';
+  account: string; // Could be a tenant ID
+}
+
+export interface TokenUsageTableRow {
+  user: string;
+  session: string;
+  input: number;
+  cached: number;
+  output: number;
+  total: number;
+  cost: number;
+}
+
+export interface TopSessionData {
+  sessionId: string;
+  inputTokens: number;
+  cachedInputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+}
+
+export interface DailyUsageData {
+  date: string; // YYYY-MM-DD
+  totalTokens: number;
+}
+
+export interface ModelPricing {
+  [modelName: string]: {
+    input: number; // Cost per 1000 tokens
+    output: number; // Cost per 1000 tokens
+  };
+}
+
+export interface TokenUsageFilters {
+    account: string;
+    dateRange: { start: string, end: string };
+    feature: string;
+    user: string;
+    model: string;
+    environment: string;
+}

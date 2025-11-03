@@ -13,8 +13,10 @@ import ProfilePage from './components/ProfilePage';
 import SupportPage from './components/SupportPage';
 import SubmissionSuccessPage from './components/SubmissionSuccessPage';
 import ChatbotWidget from './components/ChatbotWidget';
+import TokenUsagePage from './components/TokenUsagePage';
 
-type Page = 'login' | 'register' | 'home' | 'apply' | 'profile' | 'support' | 'submissionSuccess';
+
+type Page = 'login' | 'register' | 'home' | 'apply' | 'profile' | 'support' | 'submissionSuccess' | 'tokenUsage';
 
 // --- MOCK DATABASE ---
 const initialUsers: Record<string, UserProfile & { passwordHash: string }> = {
@@ -301,6 +303,8 @@ function App() {
         return <ProfilePage navigate={navigate} applications={userApplications} userProfile={currentUser} onProfileUpdate={handleProfileUpdate} />;
       case 'support':
         return <SupportPage navigate={navigate} />;
+       case 'tokenUsage':
+        return <TokenUsagePage navigate={navigate} currentUser={currentUser} />;
       case 'submissionSuccess':
         if (!lastSubmittedApp) return <HomePage navigate={navigate} />;
         return <SubmissionSuccessPage application={lastSubmittedApp} onGoToProfile={() => setPage('profile')} />;
