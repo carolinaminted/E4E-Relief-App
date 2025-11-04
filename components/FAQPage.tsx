@@ -41,13 +41,13 @@ const FAQItem: React.FC<{ faq: { question: string, answer: string }, isOpen: boo
                 className="w-full flex justify-between items-center text-left py-4 px-2"
                 aria-expanded={isOpen}
             >
-                <h3 className="text-lg font-semibold text-white">{faq.question}</h3>
+                <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">{faq.question}</h3>
                 <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 text-[#ff8400] transition-transform duration-300 transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
             <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                <div className="p-4 text-gray-300 bg-[#003a70]/30">
+                <div className="p-4 text-white bg-[#003a70]/30">
                     <p>{faq.answer}</p>
                 </div>
             </div>
@@ -56,7 +56,7 @@ const FAQItem: React.FC<{ faq: { question: string, answer: string }, isOpen: boo
 };
 
 const FAQPage: React.FC<FAQPageProps> = ({ navigate }) => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const handleToggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
