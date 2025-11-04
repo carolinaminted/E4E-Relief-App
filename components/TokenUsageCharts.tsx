@@ -18,12 +18,12 @@ const Bar: React.FC<{ value: number, total: number, color: string, label: string
 
 const TopSessionChart: React.FC<{ topSession: TopSessionData | null }> = ({ topSession }) => {
     if (!topSession) {
-        return <p className="text-gray-400 text-center">No session data available to display.</p>;
+        return <p className="text-white text-center">No session data available to display.</p>;
     }
     
     return (
         <>
-            <p className="text-sm text-gray-300 mb-1">Session ID: <span className="font-mono text-white">{topSession.sessionId}</span></p>
+            <p className="text-sm text-gray-200 mb-1">Session ID: <span className="font-mono text-white">{topSession.sessionId}</span></p>
             <div className="w-full h-8 bg-[#003a70] rounded-md flex overflow-hidden border border-[#005ca0]">
                 <Bar value={topSession.inputTokens} total={topSession.totalTokens} color="#005ca0" label="Input" />
                 <Bar value={topSession.cachedInputTokens} total={topSession.totalTokens} color="#007bff" label="Cached Input" />
@@ -43,7 +43,7 @@ const LastHourUsageChart: React.FC<{ usage: LastHourUsageDataPoint[] }> = ({ usa
     const hasData = usage.some(d => d.totalTokens > 0);
 
     if (!hasData) {
-        return <p className="text-gray-400 text-center">No token usage recorded in the last hour.</p>;
+        return <p className="text-white text-center">No token usage recorded in the last hour.</p>;
     }
 
     // Determine a sensible maximum for the Y-axis. Round up to the nearest 500, with a minimum of 500.

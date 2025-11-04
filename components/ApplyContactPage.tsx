@@ -219,7 +219,7 @@ const ApplyContactPage: React.FC<ApplyContactPageProps> = ({ formData, updateFor
         <fieldset className="border-b border-[#005ca0] pb-4">
             <button type="button" onClick={() => toggleSection('aiStarter')} className="w-full flex justify-between items-center text-left py-2" aria-expanded={openSections.aiStarter} aria-controls="ai-starter-section">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">AI Application Starter</h2>
+                    <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Let's Get Started</h2>
                 </div>
                 <ChevronIcon isOpen={openSections.aiStarter} />
             </button>

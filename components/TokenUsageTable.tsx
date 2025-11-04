@@ -50,7 +50,7 @@ const TokenUsageTable: React.FC<TokenUsageTableProps> = ({ data }) => {
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-left">
-          <thead className="border-b border-[#005ca0] text-xs text-gray-300 uppercase">
+          <thead className="border-b border-[#005ca0] text-xs text-gray-200 uppercase">
             <tr>
               <th scope="col" className="px-4 py-3 hidden md:table-cell">User</th>
               <th scope="col" className="px-4 py-3 hidden md:table-cell">Session</th>
@@ -67,21 +67,21 @@ const TokenUsageTable: React.FC<TokenUsageTableProps> = ({ data }) => {
                 data.map((row, index) => (
                     <tr key={`${row.user}-${row.session}-${row.feature}-${index}`} className="border-b border-[#005ca0] hover:bg-[#004b8d]/50">
                         <td className="px-4 py-2 font-medium text-white truncate hidden md:table-cell">{row.user}</td>
-                        <td className="px-4 py-2 text-gray-300 font-mono hidden md:table-cell">{row.session}</td>
-                        <td className="px-4 py-2 text-gray-200">{row.feature}</td>
-                        <td className="px-4 py-2 text-gray-300 text-right">{row.input.toLocaleString()}</td>
-                        <td className="px-4 py-2 text-gray-300 text-right hidden md:table-cell">{row.cached.toLocaleString()}</td>
-                        <td className="px-4 py-2 text-gray-300 text-right">{row.output.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-white font-mono hidden md:table-cell">{row.session}</td>
+                        <td className="px-4 py-2 text-white">{row.feature}</td>
+                        <td className="px-4 py-2 text-white text-right">{row.input.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-white text-right hidden md:table-cell">{row.cached.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-white text-right">{row.output.toLocaleString()}</td>
                         <td className="px-4 py-2 text-white font-semibold text-right hidden md:table-cell">{row.total.toLocaleString()}</td>
                         <td className="px-4 py-2 text-[#edda26] font-semibold text-right">${row.cost.toFixed(4)}</td>
                     </tr>
                 ))
             ) : (
                 <tr>
-                    <td colSpan={4} className="text-center py-8 text-gray-400 md:hidden">
+                    <td colSpan={4} className="text-center py-8 text-white md:hidden">
                         No token usage data found for the selected filters.
                     </td>
-                    <td colSpan={8} className="text-center py-8 text-gray-400 hidden md:table-cell">
+                    <td colSpan={8} className="text-center py-8 text-white hidden md:table-cell">
                         No token usage data found for the selected filters.
                     </td>
                 </tr>
