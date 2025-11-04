@@ -24,7 +24,7 @@ export interface UserProfile {
   householdSize: number | '';
   homeowner: 'Yes' | 'No' | '';
   preferredLanguage?: string;
-  isMailingAddressSame: boolean;
+  isMailingAddressSame: boolean | null;
   ackPolicies: boolean;
   commConsent: boolean;
   infoCorrect: boolean;

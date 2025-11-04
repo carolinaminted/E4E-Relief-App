@@ -83,7 +83,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
     
     // Mailing Address
     let mailingAddressHasBlanks = false;
-    if (!formData.isMailingAddressSame) {
+    if (formData.isMailingAddressSame === null) {
+        mailingAddressHasBlanks = true;
+    } else if (!formData.isMailingAddressSame) {
         mailingAddressHasBlanks = !formData.mailingAddress?.country || !formData.mailingAddress?.street1 || !formData.mailingAddress?.city || !formData.mailingAddress?.state || !formData.mailingAddress?.zip;
     }
 
@@ -195,7 +197,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
     if (!formData.homeowner) newErrors.homeowner = 'Homeowner status is required.';
     
     // Mailing Address (if applicable)
-    if (!formData.isMailingAddressSame) {
+    if (formData.isMailingAddressSame === null) {
+        newErrors.isMailingAddressSame = 'Please select an option for the mailing address.';
+    } else if (!formData.isMailingAddressSame) {
         const mailingAddrErrors: Record<string, string> = {};
         if (!formData.mailingAddress?.country) mailingAddrErrors.country = 'Country is required.';
         if (!formData.mailingAddress?.street1) mailingAddrErrors.street1 = 'Street 1 is required.';
@@ -215,7 +219,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
         if(newErrors.firstName || newErrors.lastName || newErrors.mobileNumber) sectionsToOpen.contact = true;
         if(newErrors.primaryAddress) sectionsToOpen.primaryAddress = true;
         if(newErrors.employmentStartDate || newErrors.eligibilityType || newErrors.householdIncome || newErrors.householdSize || newErrors.homeowner) sectionsToOpen.additionalDetails = true;
-        if(newErrors.mailingAddress) sectionsToOpen.mailingAddress = true;
+        if(newErrors.mailingAddress || newErrors.isMailingAddressSame) sectionsToOpen.mailingAddress = true;
         if(newErrors.ackPolicies || newErrors.commConsent || newErrors.infoCorrect) sectionsToOpen.consent = true;
         setOpenSections(prev => ({ ...prev, ...sectionsToOpen }));
     }
@@ -440,7 +444,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
             </button>
             <div id="mailing-section" className={`transition-all duration-500 ease-in-out ${openSections.mailingAddress ? 'max-h-[1000px] opacity-100 mt-4 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="space-y-4 pt-4">
-                    <FormRadioGroup legend="Mailing Address Same as Primary?" name="isMailingAddressSame" options={['Yes', 'No']} value={formData.isMailingAddressSame ? 'Yes' : 'No'} onChange={value => handleFormChange('isMailingAddressSame', value === 'Yes')} />
+                    <FormRadioGroup 
+                        legend="Mailing Address Same as Primary?" 
+                        name="isMailingAddressSame" 
+                        options={['Yes', 'No']} 
+                        value={formData.isMailingAddressSame === null ? '' : (formData.isMailingAddressSame ? 'Yes' : 'No')} 
+                        onChange={value => handleFormChange('isMailingAddressSame', value === 'Yes')} 
+                        required
+                        error={errors.isMailingAddressSame}
+                    />
                     {!formData.isMailingAddressSame && (
                         <div className="pt-4 mt-4 border-t border-[#002a50] space-y-6">
                             <AddressFields address={formData.mailingAddress || { country: '', street1: '', city: '', state: '', zip: '' }} onUpdate={(field, value) => handleAddressChange('mailingAddress', field, value)} onBulkUpdate={(parsed) => handleAddressBulkChange('mailingAddress', parsed)} prefix="mailing" errors={errors.mailingAddress || {}} />

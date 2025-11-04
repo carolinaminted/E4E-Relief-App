@@ -93,7 +93,7 @@ const createNewUserProfile = (
     householdIncome: '',
     householdSize: '',
     homeowner: '',
-    isMailingAddressSame: true,
+    isMailingAddressSame: null,
     ackPolicies: false,
     commConsent: false,
     infoCorrect: false,
