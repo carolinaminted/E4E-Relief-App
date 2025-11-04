@@ -169,10 +169,13 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ applications, onChatbotAc
         className={`fixed bottom-24 w-full max-w-sm h-[calc(100vh-8rem)] max-h-[600px] bg-[#004b8d] rounded-lg shadow-2xl flex flex-col z-50 border border-[#002a50] transition-all duration-300 ease-in-out left-1/2 -translate-x-1/2 md:left-8 md:-translate-x-0 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
         aria-hidden={!isOpen}
       >
-       <header className="bg-[#003a70]/70 p-4 border-b border-[#002a50] shadow-lg flex justify-between items-center rounded-t-lg flex-shrink-0">
-        <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
-          Ask Relief Assistant
-        </h1>
+       <header className="bg-[#003a70]/70 p-4 border-b border-[#002a50] shadow-lg rounded-t-lg flex-shrink-0">
+        <div>
+            <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
+              Relief Assistant
+            </h1>
+            <p className="text-xs text-gray-400 italic mt-1">*AI Agent preview using generative responses</p>
+        </div>
       </header>
        <main className="flex-1 overflow-hidden flex flex-col">
         <ChatWindow messages={messages} isLoading={isLoading} />

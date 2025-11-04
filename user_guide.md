@@ -11,10 +11,9 @@
 
 ## Home
 - **Apply for Relief**: start a new application.
-- **My Applications**: view status of past submissions.
-- **Profile**: update your personal details, address, and consent acknowledgements.
-- **Support**: read help content and ways to contact support.
-- The **Relief Assistant** icon opens the AI assistant for quick questions, filling out applications, and updating contact information.
+- **My Profile**: view your application history and manage your personal details.
+- **Support**: find contact information and answers to questions.
+- The **Relief Assistant** icon opens the AI assistant for quick questions and help filling out your application.
 
 Home Page:
 
@@ -25,127 +24,84 @@ Home Page:
 The application is a guided, step‑by‑step form. Your progress is saved in the session.
 
 1. **Contact & Address**
-   - Enter your name, email, phone, and residential address.
+   - Use the **AI Application Starter** to describe your situation in plain text and let the AI pre-fill your form.
+   - Or, fill in your name, email, phone, and residential address manually.
    - Use the **Country** picker to quickly filter and select your country.
-   - Address tips are available via the helper component.
 
 2. **Event & Request**
-   - Select the event type and describe the impact.
+   - Select the event type and provide details about the impact.
    - Enter the **requested amount** you need assistance with.
 
 3. **Expenses**
-   - Provide estimated costs or categories. Totals are shown where applicable.
+   - This section is a placeholder for future itemized expense tracking.
 
 4. **Terms & Acknowledgments**
    - Read and accept required terms.
    - Optional choices: share your story and receive additional information.
 
 5. **Submit**
-   - You will see a **Submission Success** page.
-   - Your application will appear in **My Applications** with a status.
+   - You will see a **Submission Success** page with your application ID.
+   - Your application will immediately appear in your **Profile** with a decision.
 
 Apply for Relief Page:
 
-<img width="325" height="617" alt="image" src="https://github.com/user-attachments/assets/8fff68c5-edc3-4858-989d-dac899423d43" />
-<img width="321" height="621" alt="image" src="https://github.com/user-attachments/assets/0fc04d3d-f463-4cf7-80b2-15e2b4f4634d" />
-<img width="326" height="619" alt="image" src="https://github.com/user-attachments/assets/7c0bb3f8-b964-434c-be08-bb99c7481c06" />
-<img width="316" height="615" alt="image" src="https://github.com/user-attachments/assets/766a3be0-bba5-49e8-a709-c0edf5fc3de4" />
-<img width="330" height="612" alt="image" src="https://github.com/user-attachments/assets/adb16fc7-3250-43b8-b3ae-9f432e4bdf52" />
-<img width="331" height="614" alt="image" src="https://github.com/user-attachments/assets/98651770-a6b3-4ce3-adbc-f9173ed91589" />
-<img width="316" height="601" alt="image" src="https://github.com/user-attachments/assets/937d8fb4-412d-4301-a74d-48f8deda9e34" />
-<img width="335" height="614" alt="image" src="https://github.com/user-attachments/assets/d5400bf7-8893-476b-a9c6-a0cd54c4872d" />
-<img width="328" height="609" alt="image" src="https://github.com/user-attachments/assets/3c196b2b-0a80-4d2a-bc97-ee593af263ad" />
-<img width="320" height="606" alt="image" src="https://github.com/user-attachments/assets/1d8c2d23-c35c-4ec4-b31a-1863f73c3ca0" />
-<img width="336" height="606" alt="image" src="https://github.com/user-attachments/assets/e4f3dc91-24a2-49a3-9948-0d1f0afd1161" />
-
-
-## My Applications Page
-- View a list of all your submissions with status (Submitted, Awarded, Declined).
-- Select an entry to open a **detail view** showing what you submitted.
-- Use this area to confirm what the organization received.
-
-<img width="324" height="600" alt="image" src="https://github.com/user-attachments/assets/95ebd3b3-9132-4826-9fa6-37461bc6cfc9" />
-<img width="332" height="622" alt="image" src="https://github.com/user-attachments/assets/16133a5c-a0a4-4985-9122-f4377e7a2d3f" />
+<img width="340" height="610" alt="image" src="https://github.com/user-attachments/assets/f42bec46-6b37-4197-9758-6d21eedf51c2" />
 
 
 ## Profile Page
-- Update name, preferred language, and contact details.
-- Edit your addresses. The **Country** picker supports searching.
-- Save to keep changes for your current session.
+- View a list of all your submissions with their status (Submitted, Awarded, Declined).
+- Select an entry to open a **detail view** showing what you submitted and the reasons for the decision.
+- Update your name, preferred language, and other contact details.
+- Edit your addresses.
 
-<img width="330" height="612" alt="image" src="https://github.com/user-attachments/assets/a9d7a406-90ef-416b-ada7-c33b28e35046" />
-<img width="327" height="615" alt="image" src="https://github.com/user-attachments/assets/5b9c4cf4-a5b5-43c3-96c9-56d3e5db9524" />
+<img width="324" height="615" alt="image" src="https://github.com/user-attachments/assets/a19f966e-301d-4dcb-9e51-32f5097a6228" />
 
 
 ## Support Page
-- Read guidance on eligibility, timelines, and contact options.
-- This page is a placeholder and can be replaced with your organization’s content and links.
+- Find contact information for program support.
+- This page can be replaced with your organization’s content and links.
 
 <img width="342" height="617" alt="image" src="https://github.com/user-attachments/assets/450f1dd3-a0be-476c-b892-8c7346f8381b" />
 
 
 ## Relief Assistant (AI Assistant)
-- Open the chat from the floating widget.
-- Ask “how do I…” questions about the process.
-- The assistant can perform a simple **eligibility check** and explain the result.
-- Responses are for guidance of the program.
-- Provide information to prefillout application information.
-- Context aware of applications and previous submission decisions.
+- Open the chat from the floating widget on the bottom left.
+- Ask questions about the application process.
+- Provide information like "I was affected by the flood and need $1500" to have the AI pre-fill your application draft.
+- Ask about past applications, including why one might have been declined.
 
 <img width="335" height="609" alt="image" src="https://github.com/user-attachments/assets/a8f64df1-c745-4cc7-8ef9-8a19945415c7" />
-<img width="339" height="605" alt="image" src="https://github.com/user-attachments/assets/257a27df-1cb7-41d3-937a-7756a3eb8616" />
 
 
-## AI Decisioning and Instant Grant Eligibility
+## Instant, Rules-Based Decisioning
 
-When a user completes the **Apply for Relief** form and clicks **Submit**, the application triggers the **AI Decisioning Service**.  
-This service evaluates the applicant’s data against fund-specific eligibility rules and renders a decision in real time.
+When a user completes the **Apply for Relief** form and clicks **Submit**, the application is processed by a **deterministic, rules-based engine** that provides an immediate decision.
 
 ### Flow Overview
 1. **Form Submission**
-   - The user’s completed application (contact, event, expenses, acknowledgments) is serialized into a structured payload.
-   - This payload includes user metadata and contextual fund information.
+   - The user’s completed application data is sent to the eligibility engine.
 
-2. **AI Eligibility Evaluation**
-   - The payload is passed to the AI Decisioning module (`geminiService.ts` or equivalent).
-   - The module constructs a structured request aligned with the **eligibility evaluation schema**:
-     ```ts
-     {
-       "tool": "EligibilityEvaluation",
-       "input": {
-         "fund_id": "<fund-uuid>",
-         "country": "US",
-         "event_type": "Hurricane",
-         "requested_amount": 1200,
-         "time_since_event": "5 days",
-         "prior_awards": 0
-       }
-     }
-     ```
-   - The AI model (e.g., Gemini or GPT) uses fund policy rules and prior case patterns to assess:
-     - Applicant eligibility (yes/no + reasoning)
-     - Decision type (approve, deny, review)
-     - Suggested grant amount (if approved)
-     - Policy rationale (text summary for auditing)
+2. **Rules Evaluation**
+   - The engine, a TypeScript function, programmatically checks the application against a hard-coded set of business rules (e.g., event date recency, requested amount vs. remaining limits, conditional field completion).
+   - This process is extremely fast and consistent.
 
 3. **Decision Output**
-   - The AI returns a structured JSON response:
+   - The engine returns a structured JSON response:
      ```json
      {
-       "eligible": true,
        "decision": "Approved",
+       "reasons": ["Application meets all automatic approval criteria."],
        "recommended_award": 1000,
-       "reasoning": "Applicant meets criteria and has no prior awards."
+       "policy_hits": [{"rule_id":"R1","passed":true,"detail":"..."}]
      }
      ```
-   - The UI displays an instant confirmation banner summarizing the result.
-   - The result is logged with the application record for auditing.
+   - The UI displays an instant confirmation and summarizes the result.
+   - The full decision, including the reasons, is logged with the application record for auditing and can be viewed by the user in their profile.
 
 4. **Post-Decision Handling**
-   - If approved: the app can initiate a **payment creation** record in Dynamics 365 via API.
-   - If pending review: it flags the record for manual approval by case workers.
-   - If denied: it provides a clear explanation to the applicant, referencing relevant criteria.
-
+   - **Approved**: The application status is set to 'Awarded'.
+   - **Pending Review**: The status is set to 'Submitted', indicating it needs manual review.
+   - **Denied**: The status is 'Declined', and the specific reasons are provided to the applicant.
   
 <img width="333" height="615" alt="image" src="https://github.com/user-attachments/assets/a323002c-28b4-4495-bb27-7b2afc24c162" />
 <img width="339" height="605" alt="image" src="https://github.com/user-attachments/assets/0361b00d-7d99-4189-8b49-03d7536d389c" />
@@ -153,10 +109,10 @@ This service evaluates the applicant’s data against fund-specific eligibility 
 
 
 ### Key Advantages
-- **Instant Eligibility Feedback** — applicants know their outcome immediately.
-- **Consistent Rule Enforcement** — AI applies the same logic for all applicants.
-- **Transparent Reasoning** — every decision carries human-readable justification.
-- **Audit Ready** — results are logged for compliance and reporting.
+- **Instant Feedback** — Applicants know their outcome immediately without waiting.
+- **Consistency & Fairness** — The rules engine applies the exact same logic to every applicant, ensuring equitable decisions.
+- **Transparent Reasoning** — Every decision is accompanied by clear, human-readable justifications.
+- **Audit Ready** — Decision results, including which rules were checked, are logged for compliance and reporting.
 
 
 # Integration Overview — Azure AD B2C + Dataverse
@@ -182,8 +138,9 @@ This service evaluates the applicant’s data against fund-specific eligibility 
      - **Awards** for grant outcomes.
    - Use **TanStack Query** to manage cache, sync, and optimistic updates.
 
-5. **AI Decisioning**
-   - Run **AI eligibility and grant decisioning** server-side within the API before saving an Application.
+5. **AI & Decisioning**
+   - Run **AI-powered tasks** (like address parsing or form pre-filling) server-side within the API.
+   - The final **eligibility and grant decisioning** uses the deterministic rules-engine before saving an Application.
    - Store decision outcome, reasoning, and audit trail directly in Dataverse.
 
 6. **Security & Configuration**
@@ -200,7 +157,7 @@ This service evaluates the applicant’s data against fund-specific eligibility 
 
 8. **Observability & Reliability**
    - Add **structured logs**, **correlation IDs**, and **error telemetry**.
-   - AI decision logs with updates on cases with artifacts used to make the eligibility award or decline decision
+   - Decision logs with updates on cases with artifacts used to make the eligibility award or decline decision.
    - Provide **user-friendly error messages** for predictable recovery and smoother UX.
 
 

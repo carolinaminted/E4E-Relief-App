@@ -52,10 +52,16 @@ const PaymentOptionsPage: React.FC<PaymentOptionsPageProps> = ({ navigate }) => 
   return (
     <div className="flex-1 flex flex-col p-8">
       <div className="max-w-5xl mx-auto w-full">
-        <button onClick={() => navigate('support')} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 mb-6">&larr; Back to Support Center</button>
-        <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-4 text-center">
-          Grant Payment Options
-        </h1>
+        <div className="relative flex justify-center items-center mb-4">
+            <button onClick={() => navigate('support')} className="absolute left-0 text-[#ff8400] hover:opacity-80 transition-opacity" aria-label="Back to Support Center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                </svg>
+            </button>
+            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
+              Grant Payment Options
+            </h1>
+        </div>
         <p className="text-center text-gray-300 mb-12 max-w-2xl mx-auto">We partner with industry-leading payment providers to ensure your relief funds are delivered quickly and securely, wherever you are in the world.</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
