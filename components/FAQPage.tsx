@@ -65,10 +65,16 @@ const FAQPage: React.FC<FAQPageProps> = ({ navigate }) => {
   return (
     <div className="flex-1 flex flex-col p-8">
       <div className="max-w-4xl mx-auto w-full">
-        <button onClick={() => navigate('support')} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] hover:opacity-80 mb-6">&larr; Back to Support Center</button>
-        <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] mb-12 text-center">
-          Frequently Asked Questions
-        </h1>
+        <div className="relative flex justify-center items-center mb-6">
+            <button onClick={() => navigate('support')} className="absolute left-0 text-[#ff8400] hover:opacity-80 transition-opacity" aria-label="Back to Support Center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                </svg>
+            </button>
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">
+              FAQ's
+            </h1>
+        </div>
         <div className="bg-[#004b8d]/80 rounded-lg shadow-2xl p-4 md:p-6 border border-[#005ca0]/50">
           {faqs.map((faq, index) => (
             <FAQItem 
